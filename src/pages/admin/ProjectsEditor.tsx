@@ -4,7 +4,7 @@ import { usePortfolioData } from '../../hooks/usePortfolioData';
 import type { Project } from '../../types/portfolio';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
-import { convertFileToBase64 } from '../../utils/fileUtils';
+import { compressImage } from '../../utils/fileUtils';
 
 export const ProjectsEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
@@ -68,7 +68,7 @@ export const ProjectsEditor: React.FC = () => {
         if (file && editingProject) {
             try {
                 setIsUploading(true);
-                const base64 = await convertFileToBase64(file);
+                const base64 = await compressImage(file);
                 setEditingProject({ ...editingProject, image: base64 });
             } catch (error) {
                 console.error('Failed to convert image:', error);
