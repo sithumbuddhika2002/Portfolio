@@ -147,6 +147,53 @@ export const SettingsEditor: React.FC = () => {
                             </p>
                         </div>
 
+                        <h3 className="text-xl font-bold mt-8 mb-4">Contact Information</h3>
+
+                        <div>
+                            <label className="block text-sm font-semibold mb-2">
+                                Email Address
+                            </label>
+                            <input
+                                type="email"
+                                value={contact.email}
+                                onChange={(e) =>
+                                    setContact({ ...contact, email: e.target.value })
+                                }
+                                className="input-field"
+                                placeholder="your.email@example.com"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold mb-2">
+                                Phone Number
+                            </label>
+                            <input
+                                type="tel"
+                                value={contact.phone}
+                                onChange={(e) =>
+                                    setContact({ ...contact, phone: e.target.value })
+                                }
+                                className="input-field"
+                                placeholder="+1 (234) 567-8900"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold mb-2">
+                                Location
+                            </label>
+                            <input
+                                type="text"
+                                value={contact.location}
+                                onChange={(e) =>
+                                    setContact({ ...contact, location: e.target.value })
+                                }
+                                className="input-field"
+                                placeholder="City, Country"
+                            />
+                        </div>
+
                         <h3 className="text-xl font-bold mt-8 mb-4">Social Links</h3>
 
                         {Object.entries(contact.social).map(([platform, url]) => (

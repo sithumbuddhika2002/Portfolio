@@ -16,7 +16,19 @@ export const ContactSection: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Since no backend, just show success message
+
+        // Create mailto link with form data
+        const emailTo = 'sithumbuddhika2002@gmail.com';
+        const subject = encodeURIComponent(formData.subject);
+        const body = encodeURIComponent(
+            `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
+        );
+        const mailtoLink = `mailto:${emailTo}?subject=${subject}&body=${body}`;
+
+        // Open email client
+        window.location.href = mailtoLink;
+
+        // Show success message
         setSubmitStatus('success');
         setTimeout(() => {
             setSubmitStatus('idle');
