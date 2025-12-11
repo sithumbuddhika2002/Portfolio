@@ -1,0 +1,14 @@
+﻿
+> portfolio@0.0.0 build
+> tsc -b && vite build
+
+src/components/portfolio/ProjectsSection.tsx(5,10): error TS1484: 'Project' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/data/initialData.ts(1,10): error TS1484: 'PortfolioData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/hooks/usePortfolioData.ts(1,20): error TS6133: 'useEffect' is declared but its value is never read.
+src/hooks/usePortfolioData.ts(2,10): error TS1484: 'PortfolioData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/admin/ExperienceEditor.tsx(4,10): error TS1484: 'Experience' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/admin/ExperienceEditor.tsx(4,22): error TS1484: 'Education' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/admin/ProjectsEditor.tsx(4,10): error TS1484: 'Project' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/admin/ProjectsEditor.tsx(5,20): error TS6133: 'TrashIcon' is declared but its value is never read.
+src/pages/admin/SkillsEditor.tsx(4,10): error TS1484: 'Skill' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/services/storage.ts(1,10): error TS1484: 'PortfolioData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
