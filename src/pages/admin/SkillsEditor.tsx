@@ -104,6 +104,46 @@ export const SkillsEditor: React.FC = () => {
                                     <option value="tools">Tools</option>
                                     <option value="other">Other</option>
                                 </select>
+
+                                <div>
+                                    <label className="block text-sm mb-2 text-gray-600 dark:text-gray-400">
+                                        Custom Icon (SVG Code or URL)
+                                    </label>
+                                    <textarea
+                                        value={editingSkill.icon || ''}
+                                        onChange={(e) =>
+                                            setEditingSkill({ ...editingSkill, icon: e.target.value })
+                                        }
+                                        className="input-field min-h-[100px] font-mono text-xs"
+                                        placeholder="<svg>...</svg> or https://example.com/icon.png"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Leave empty to use default icon
+                                    </p>
+
+                                    <div className="mt-2">
+                                        <label className="block text-xs text-gray-500 mb-1">Or upload an image (PNG, JPG, SVG)</label>
+                                        <input
+                                            type="file"
+                                            accept=".svg, .png, .jpg, .jpeg"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        setEditingSkill({
+                                                            ...editingSkill,
+                                                            icon: reader.result as string
+                                                        });
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }}
+                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-gray-700 dark:file:text-gray-200"
+                                        />
+                                    </div>
+                                </div>
+
                                 <div>
                                     <label className="block text-sm mb-2">
                                         Proficiency: {editingSkill.proficiency}%

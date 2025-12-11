@@ -2,24 +2,50 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 
-const categoryColors = {
-    frontend: 'from-blue-500 to-cyan-500',
-    backend: 'from-green-500 to-emerald-500',
-    tools: 'from-purple-500 to-pink-500',
-    other: 'from-orange-500 to-red-500',
+
+
+import { githubService } from '../../services/github';
+
+const getSubtitle = (skillName: string): string => {
+    const map: Record<string, string> = {
+        'HTML5': 'User Interface',
+        'CSS3': 'User Interface',
+        'Tailwind CSS': 'User Interface',
+        'TypeScript': 'User Interface',
+        'React': 'Framework',
+        'Next.js': 'Web Framework',
+        'Vue.js': 'Framework',
+        'Angular': 'Framework',
+        'Node.js': 'Web Server',
+        'Express.js': 'Node Framework',
+        'MongoDB': 'Database',
+        'PostgreSQL': 'Database',
+        'MySQL': 'Database',
+        'Firebase': 'Backend as a Service',
+        'Figma': 'Design tool',
+        'Photoshop': 'Design tool',
+        'Illustrator': 'Design tool',
+        'Git': 'Version Control',
+        'Docker': 'Containerization',
+        'AWS': 'Cloud Services',
+        'Python': 'Language',
+        'Java': 'Language',
+        'JavaScript': 'Language',
+        'PHP': 'Language',
+        'C#': 'Language',
+        'C++': 'Language',
+        'Swift': 'Language',
+        'Kotlin': 'Language',
+        'Linux': 'Platform',
+        'Android Studio': 'IDE',
+        'VS Code': 'IDE',
+    };
+    return map[skillName] || 'Technology';
 };
 
 export const SkillsSection: React.FC = () => {
     const { data } = usePortfolioData();
     const { skills } = data;
-
-    const groupedSkills = skills.reduce((acc, skill) => {
-        if (!acc[skill.category]) {
-            acc[skill.category] = [];
-        }
-        acc[skill.category].push(skill);
-        return acc;
-    }, {} as Record<string, typeof skills>);
 
     return (
         <section id="skills" className="section-padding">
@@ -39,56 +65,64 @@ export const SkillsSection: React.FC = () => {
                     </p>
                 </motion.div>
 
-                <div className="space-y-12">
-                    {Object.entries(groupedSkills).map(([category, categorySkills], catIndex) => (
-                        <motion.div
-                            key={category}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: catIndex * 0.1 }}
-                        >
-                            <h3 className="text-2xl font-bold font-display mb-6 capitalize">
-                                {category}
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {categorySkills.map((skill, index) => (
-                                    <motion.div
-                                        key={skill.id}
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        whileInView={{ opacity: 1, scale: 1 }}
-                                        viewport={{ once: true }}
-                                        transition={{ delay: index * 0.05 }}
-                                        whileHover={{ scale: 1.05, y: -5 }}
-                                        className="card-hover group"
-                                    >
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h4 className="text-lg font-semibold">{skill.name}</h4>
-                                            <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
-                                                {skill.proficiency}%
-                                            </span>
-                                        </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {skills.map((skill, index) => {
+                        const iconUrl = githubService.getSkillIcon(skill.name);
 
-                                        {/* Progress Bar */}
-                                        <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                            <motion.div
-                                                initial={{ width: 0 }}
-                                                whileInView={{ width: `${skill.proficiency}%` }}
-                                                viewport={{ once: true }}
-                                                transition={{ duration: 1, delay: index * 0.05 }}
-                                                className={`h-full bg-gradient-to-r ${categoryColors[skill.category]
-                                                    } rounded-full`}
+                        // Determine what to render: Custom Icon (SVG/URL) or Default Devicon
+                        const hasCustomIcon = !!skill.icon;
+                        const isSvg = hasCustomIcon && skill.icon?.trim().startsWith('<svg');
+
+                        return (
+                            <motion.div
+                                key={skill.id}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.05 }}
+                                whileHover={{ y: -5 }}
+                                className="group relative"
+                            >
+                                <div className="p-4 bg-gray-900 rounded-2xl border border-gray-800 hover:border-gray-700 transition-colors duration-300 flex items-center gap-4">
+                                    <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-800 rounded-xl p-2 group-hover:bg-gray-700 transition-colors duration-300 overflow-hidden">
+                                        {hasCustomIcon ? (
+                                            isSvg ? (
+                                                <div
+                                                    className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:text-white"
+                                                    dangerouslySetInnerHTML={{ __html: skill.icon! }}
+                                                />
+                                            ) : (
+                                                <img
+                                                    src={skill.icon}
+                                                    alt={skill.name}
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            )
+                                        ) : iconUrl ? (
+                                            <img
+                                                src={iconUrl}
+                                                alt={skill.name}
+                                                className="w-full h-full object-contain"
                                             />
-                                        </div>
+                                        ) : (
+                                            <span className="text-xl font-bold text-white">
+                                                {skill.name[0]}
+                                            </span>
+                                        )}
+                                    </div>
 
-                                        {/* Glow effect on hover */}
-                                        <div className={`absolute inset-0 bg-gradient-to-r ${categoryColors[skill.category]
-                                            } opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 pointer-events-none`} />
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    ))}
+                                    <div className="flex flex-col">
+                                        <h4 className="font-bold text-gray-100 text-base leading-tight">
+                                            {skill.name}
+                                        </h4>
+                                        <span className="text-sm text-gray-500 font-medium">
+                                            {getSubtitle(skill.name)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </div>
         </section>

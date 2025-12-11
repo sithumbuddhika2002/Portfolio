@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navbar } from '../components/common/Navbar';
 import { HeroSection } from '../components/portfolio/HeroSection';
 import { AboutSection } from '../components/portfolio/AboutSection';
@@ -6,8 +6,15 @@ import { SkillsSection } from '../components/portfolio/SkillsSection';
 import { ProjectsSection } from '../components/portfolio/ProjectsSection';
 import { ExperienceSection } from '../components/portfolio/ExperienceSection';
 import { ContactSection } from '../components/portfolio/ContactSection';
+import { usePortfolioData } from '../hooks/usePortfolioData';
 
 export const Portfolio: React.FC = () => {
+    const { syncWithGitHub } = usePortfolioData();
+
+    useEffect(() => {
+        syncWithGitHub();
+    }, []);
+
     return (
         <div className="min-h-screen">
             <Navbar />

@@ -25,10 +25,31 @@ export const usePortfolioData = () => {
         refresh();
     };
 
+    // Sync with GitHub
+    const syncWithGitHub = async () => {
+        try {
+            const { githubService } = await import('../services/github');
+            const githubProfile = await githubService.getProfile();
+
+            if (Object.keys(githubProfile).length > 0) {
+                const updatedProfile = {
+                    ...data.profile,
+                    ...githubProfile,
+                };
+                updateSection('profile', updatedProfile);
+                return true;
+            }
+        } catch (error) {
+            console.error('Failed to sync with GitHub:', error);
+        }
+        return false;
+    };
+
     return {
         data,
         updateData,
         updateSection,
         refresh,
+        syncWithGitHub,
     };
 };
