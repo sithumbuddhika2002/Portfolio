@@ -4,11 +4,14 @@ import { usePortfolioData } from '../../hooks/usePortfolioData';
 import type { Project } from '../../types/portfolio';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
+import { convertFileToBase64 } from '../../utils/fileUtils';
+
 export const ProjectsEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
     const [projects, setProjects] = useState(data.projects);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [saved, setSaved] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const handleSave = () => {
         updateSection('projects', projects);
@@ -28,23 +31,54 @@ export const ProjectsEditor: React.FC = () => {
             category: 'Web Development',
             date: new Date().toISOString().substring(0, 7),
         };
-        setProjects([...projects, newProject]);
+        // Don't add to list yet, just open modal
         setEditingProject(newProject);
     };
 
     const handleDelete = (id: string) => {
-        setProjects(projects.filter((p) => p.id !== id));
+        const newProjects = projects.filter((p) => p.id !== id);
+        setProjects(newProjects);
+        updateSection('projects', newProjects);
         if (editingProject?.id === id) {
             setEditingProject(null);
         }
     };
 
     const handleUpdate = (updatedProject: Project) => {
-        setProjects(
-            projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
-        );
+        let newProjects;
+        const exists = projects.some((p) => p.id === updatedProject.id);
+
+        if (exists) {
+            newProjects = projects.map((p) =>
+                p.id === updatedProject.id ? updatedProject : p
+            );
+        } else {
+            newProjects = [...projects, updatedProject];
+        }
+
+        setProjects(newProjects);
+        updateSection('projects', newProjects); // Auto-save
         setEditingProject(null);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
     };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file && editingProject) {
+            try {
+                setIsUploading(true);
+                const base64 = await convertFileToBase64(file);
+                setEditingProject({ ...editingProject, image: base64 });
+            } catch (error) {
+                console.error('Failed to convert image:', error);
+                alert('Failed to upload image. Please try again.');
+            } finally {
+                setIsUploading(false);
+            }
+        }
+    };
+
 
     return (
         <div>
@@ -182,16 +216,45 @@ export const ProjectsEditor: React.FC = () => {
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-semibold mb-2">
-                                        Image URL
+                                        Project Image
                                     </label>
-                                    <input
-                                        type="url"
-                                        value={editingProject.image}
-                                        onChange={(e) =>
-                                            setEditingProject({ ...editingProject, image: e.target.value })
-                                        }
-                                        className="input-field"
-                                    />
+                                    <div className="space-y-3">
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="url"
+                                                value={editingProject.image}
+                                                onChange={(e) =>
+                                                    setEditingProject({ ...editingProject, image: e.target.value })
+                                                }
+                                                className="input-field flex-1"
+                                                placeholder="Enter URL or upload image"
+                                            />
+                                            <div className="relative">
+                                                <input
+                                                    type="file"
+                                                    accept="image/png, image/jpeg, image/jpg, image/svg+xml, image/gif"
+                                                    onChange={handleImageUpload}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    disabled={isUploading}
+                                                />
+                                                <button
+                                                    className={`px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${isUploading ? 'opacity-50 cursor-not-allowed' : ''
+                                                        }`}
+                                                >
+                                                    {isUploading ? 'Uploading...' : 'Upload Image'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {editingProject.image && (
+                                            <div className="relative w-full h-40 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
+                                                <img
+                                                    src={editingProject.image}
+                                                    alt="Preview"
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div>

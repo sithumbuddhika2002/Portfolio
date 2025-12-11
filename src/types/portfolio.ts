@@ -88,6 +88,7 @@ export interface Settings {
         username: string;
         password: string;
     };
+    season: 'none' | 'christmas' | 'newyear';
 }
 
 // Auth Types

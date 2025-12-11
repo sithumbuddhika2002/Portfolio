@@ -115,5 +115,6 @@ export const initialData: PortfolioData = {
             username: 'admin',
             password: 'admin123',
         },
+        season: 'none',
     },
 };

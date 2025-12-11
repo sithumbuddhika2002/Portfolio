@@ -124,6 +124,29 @@ export const SettingsEditor: React.FC = () => {
                             />
                         </div>
 
+                        <div>
+                            <label className="block text-sm font-semibold mb-2">
+                                Seasonal Theme
+                            </label>
+                            <select
+                                value={settings.season || 'none'}
+                                onChange={(e) =>
+                                    setSettings({
+                                        ...settings,
+                                        season: e.target.value as 'none' | 'christmas' | 'newyear',
+                                    })
+                                }
+                                className="input-field"
+                            >
+                                <option value="none">None</option>
+                                <option value="christmas">Christmas (Snow)</option>
+                                <option value="newyear">New Year (Fireworks)</option>
+                            </select>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Enable global animations for specific holidays.
+                            </p>
+                        </div>
+
                         <h3 className="text-xl font-bold mt-8 mb-4">Social Links</h3>
 
                         {Object.entries(contact.social).map(([platform, url]) => (
