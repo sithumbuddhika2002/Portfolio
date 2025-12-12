@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import { auth } from '../../services/auth';
 import { firebaseStorage } from '../../services/firebaseStorage';
+import { useToast } from '../../contexts/ToastContext';
 
 
 export const SettingsEditor: React.FC = () => {
     const { data, updateSection, refresh } = usePortfolioData();
+    const { showSuccess, showError } = useToast();
     const [settings, setSettings] = useState(data.settings);
     const [contact, setContact] = useState(data.contact);
     const [credentials, setCredentials] = useState({
@@ -14,42 +16,45 @@ export const SettingsEditor: React.FC = () => {
         password: '',
         confirmPassword: '',
     });
-    const [saved, setSaved] = useState(false);
-    const [credentialsSaved, setCredentialsSaved] = useState(false);
 
     const handleSaveSettings = async () => {
         try {
             await updateSection('settings', settings);
             await updateSection('contact', contact);
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2000);
+            showSuccess('Settings saved successfully! 🎉');
         } catch (error) {
             console.error('Error saving settings:', error);
+            showError('Failed to save settings. Please try again.');
         }
     };
 
     const handleUpdateCredentials = (e: React.FormEvent) => {
         e.preventDefault();
         if (credentials.password !== credentials.confirmPassword) {
-            alert('Passwords do not match!');
+            showError('Passwords do not match!');
             return;
         }
         if (credentials.username && credentials.password) {
             auth.updateCredentials(credentials.username, credentials.password);
-            setCredentialsSaved(true);
             setCredentials({ username: '', password: '', confirmPassword: '' });
-            setTimeout(() => setCredentialsSaved(false), 2000);
+            showSuccess('Credentials updated successfully! 🔒');
         }
     };
 
     const handleExport = async () => {
-        const jsonData = await firebaseStorage.exportData();
-        const blob = new Blob([jsonData], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'portfolio-data.json';
-        a.click();
+        try {
+            const jsonData = await firebaseStorage.exportData();
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'portfolio-data.json';
+            a.click();
+            showSuccess('Data exported successfully! 💾');
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            showError('Failed to export data. Please try again.');
+        }
     };
 
     const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,9 +66,9 @@ export const SettingsEditor: React.FC = () => {
                 const success = await firebaseStorage.importData(content);
                 if (success) {
                     await refresh();
-                    alert('Data imported successfully!');
+                    showSuccess('Data imported successfully! 📊');
                 } else {
-                    alert('Failed to import data. Please check the file format.');
+                    showError('Failed to import data. Please check the file format.');
                 }
             };
             reader.readAsText(file);
@@ -227,7 +232,7 @@ export const SettingsEditor: React.FC = () => {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                         >
-                            {saved ? '✓ Saved!' : 'Save Settings'}
+                            Save Settings
                         </motion.button>
                     </div>
                 </motion.div>
@@ -291,7 +296,7 @@ export const SettingsEditor: React.FC = () => {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                         >
-                            {credentialsSaved ? '✓ Credentials Updated!' : 'Update Credentials'}
+                            Update Credentials
                         </motion.button>
                     </form>
                 </motion.div>
@@ -342,9 +347,14 @@ export const SettingsEditor: React.FC = () => {
                                             'Are you sure you want to reset all data? This cannot be undone.'
                                         )
                                     ) {
-                                        await firebaseStorage.reset();
-                                        await refresh();
-                                        alert('Data has been reset to defaults.');
+                                        try {
+                                            await firebaseStorage.reset();
+                                            await refresh();
+                                            showSuccess('Data has been reset to defaults.');
+                                        } catch (error) {
+                                            console.error('Error resetting data:', error);
+                                            showError('Failed to reset data. Please try again.');
+                                        }
                                     }
                                 }}
                                 className="px-6 py-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"

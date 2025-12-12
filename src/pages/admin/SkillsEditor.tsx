@@ -3,20 +3,21 @@ import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import type { Skill } from '../../types/portfolio';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useToast } from '../../contexts/ToastContext';
 
 export const SkillsEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
+    const { showSuccess, showError } = useToast();
     const [skills, setSkills] = useState(data.skills);
     const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
-    const [saved, setSaved] = useState(false);
 
     const handleSave = async () => {
         try {
             await updateSection('skills', skills);
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2000);
+            showSuccess('Skills updated successfully! 🎉');
         } catch (error) {
             console.error('Error saving skills:', error);
+            showError('Failed to save skills. Please try again.');
         }
     };
 
@@ -70,7 +71,7 @@ export const SkillsEditor: React.FC = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                        {saved ? '✓ Saved!' : 'Save All'}
+                        Save All
                     </motion.button>
                 </div>
             </motion.div>

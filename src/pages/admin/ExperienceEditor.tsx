@@ -3,21 +3,22 @@ import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import type { Experience, Education } from '../../types/portfolio';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useToast } from '../../contexts/ToastContext';
 
 export const ExperienceEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
+    const { showSuccess, showError } = useToast();
     const [experience, setExperience] = useState(data.experience);
     const [education, setEducation] = useState(data.education);
-    const [saved, setSaved] = useState(false);
 
     const handleSave = async () => {
         try {
             await updateSection('experience', experience);
             await updateSection('education', education);
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2000);
+            showSuccess('Experience and education updated successfully! 🎉');
         } catch (error) {
             console.error('Error saving experience/education:', error);
+            showError('Failed to save changes. Please try again.');
         }
     };
 
@@ -71,7 +72,7 @@ export const ExperienceEditor: React.FC = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
-                    {saved ? '✓ Saved!' : 'Save All'}
+                    Save All
                 </motion.button>
             </motion.div>
 

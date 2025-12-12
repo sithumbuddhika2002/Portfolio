@@ -3,23 +3,23 @@ import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import type { Project } from '../../types/portfolio';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
-
+import { useToast } from '../../contexts/ToastContext';
 import { compressImage } from '../../utils/fileUtils';
 
 export const ProjectsEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
+    const { showSuccess, showError } = useToast();
     const [projects, setProjects] = useState(data.projects);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
-    const [saved, setSaved] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
 
     const handleSave = async () => {
         try {
             await updateSection('projects', projects);
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2000);
+            showSuccess('Projects updated successfully! 🎉');
         } catch (error) {
             console.error('Error saving projects:', error);
+            showError('Failed to save projects. Please try again.');
         }
     };
 
@@ -40,31 +40,41 @@ export const ProjectsEditor: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        const newProjects = projects.filter((p) => p.id !== id);
-        setProjects(newProjects);
-        await updateSection('projects', newProjects);
-        if (editingProject?.id === id) {
-            setEditingProject(null);
+        try {
+            const newProjects = projects.filter((p) => p.id !== id);
+            setProjects(newProjects);
+            await updateSection('projects', newProjects);
+            if (editingProject?.id === id) {
+                setEditingProject(null);
+            }
+            showSuccess('Project deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting project:', error);
+            showError('Failed to delete project. Please try again.');
         }
     };
 
     const handleUpdate = async (updatedProject: Project) => {
-        let newProjects;
-        const exists = projects.some((p) => p.id === updatedProject.id);
+        try {
+            let newProjects;
+            const exists = projects.some((p) => p.id === updatedProject.id);
 
-        if (exists) {
-            newProjects = projects.map((p) =>
-                p.id === updatedProject.id ? updatedProject : p
-            );
-        } else {
-            newProjects = [...projects, updatedProject];
+            if (exists) {
+                newProjects = projects.map((p) =>
+                    p.id === updatedProject.id ? updatedProject : p
+                );
+            } else {
+                newProjects = [...projects, updatedProject];
+            }
+
+            setProjects(newProjects);
+            await updateSection('projects', newProjects);
+            setEditingProject(null);
+            showSuccess(exists ? 'Project updated successfully! 🎉' : 'Project added successfully! 🎉');
+        } catch (error) {
+            console.error('Error saving project:', error);
+            showError('Failed to save project. Please try again.');
         }
-
-        setProjects(newProjects);
-        await updateSection('projects', newProjects); // Auto-save
-        setEditingProject(null);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,9 +84,10 @@ export const ProjectsEditor: React.FC = () => {
                 setIsUploading(true);
                 const base64 = await compressImage(file);
                 setEditingProject({ ...editingProject, image: base64 });
+                showSuccess('Image uploaded successfully!');
             } catch (error) {
                 console.error('Failed to convert image:', error);
-                alert('Failed to upload image. Please try again.');
+                showError('Failed to upload image. Please try a smaller file.');
             } finally {
                 setIsUploading(false);
             }
@@ -113,7 +124,7 @@ export const ProjectsEditor: React.FC = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                        {saved ? '✓ Saved!' : 'Save All'}
+                        Save All
                     </motion.button>
                 </div>
             </motion.div>

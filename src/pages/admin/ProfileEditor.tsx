@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
+import { useToast } from '../../contexts/ToastContext';
 
 export const ProfileEditor: React.FC = () => {
     const { data, updateSection, loading } = usePortfolioData();
+    const { showSuccess, showError } = useToast();
     const [profile, setProfile] = useState(data.profile || {
         name: '',
         title: '',
@@ -14,7 +16,6 @@ export const ProfileEditor: React.FC = () => {
         location: '',
         resumeUrl: ''
     });
-    const [saved, setSaved] = useState(false);
 
     // Update local state when data loads
     useEffect(() => {
@@ -28,11 +29,10 @@ export const ProfileEditor: React.FC = () => {
         e.preventDefault();
         try {
             await updateSection('profile', profile);
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2000);
+            showSuccess('Profile updated successfully! 🎉');
         } catch (error) {
             console.error('Error saving profile:', error);
-            alert('Failed to save changes. Please check your Firebase configuration.');
+            showError('Failed to save changes. Please check your Firebase configuration.');
         }
     };
 
@@ -184,7 +184,7 @@ export const ProfileEditor: React.FC = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                 >
-                    {saved ? '✓ Saved!' : 'Save Changes'}
+                    Save Changes
                 </motion.button>
             </motion.form>
         </div>
