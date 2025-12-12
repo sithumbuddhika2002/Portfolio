@@ -112,8 +112,8 @@ export const initialData: PortfolioData = {
         tagline: 'Building the future, one line of code at a time',
         metaDescription: 'Full Stack Developer & Designer specializing in modern web applications',
         adminCredentials: {
-            username: 'admin',
-            password: 'admin123',
+            username: 'sithum',
+            password: 'Sithum0213',
         },
         season: 'christmas',
     },

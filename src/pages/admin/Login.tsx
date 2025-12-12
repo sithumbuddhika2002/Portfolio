@@ -116,7 +116,7 @@ export const Login: React.FC = () => {
 
                     {/* Default Credentials Hint */}
                     <div className="mt-6 text-center text-sm text-white/70">
-                        <p>Default: admin / admin123</p>
+                        <p>Default: sithum / Sithum0213</p>
                     </div>
 
                     {/* Back to Portfolio */}
