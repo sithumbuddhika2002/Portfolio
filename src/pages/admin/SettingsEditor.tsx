@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import { auth } from '../../services/auth';
-import { storage } from '../../services/storage';
+import { firebaseStorage } from '../../services/firebaseStorage';
+
 
 export const SettingsEditor: React.FC = () => {
     const { data, updateSection, refresh } = usePortfolioData();
@@ -16,11 +17,15 @@ export const SettingsEditor: React.FC = () => {
     const [saved, setSaved] = useState(false);
     const [credentialsSaved, setCredentialsSaved] = useState(false);
 
-    const handleSaveSettings = () => {
-        updateSection('settings', settings);
-        updateSection('contact', contact);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+    const handleSaveSettings = async () => {
+        try {
+            await updateSection('settings', settings);
+            await updateSection('contact', contact);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+        } catch (error) {
+            console.error('Error saving settings:', error);
+        }
     };
 
     const handleUpdateCredentials = (e: React.FormEvent) => {
@@ -37,8 +42,8 @@ export const SettingsEditor: React.FC = () => {
         }
     };
 
-    const handleExport = () => {
-        const jsonData = storage.exportData();
+    const handleExport = async () => {
+        const jsonData = await firebaseStorage.exportData();
         const blob = new Blob([jsonData], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -51,11 +56,11 @@ export const SettingsEditor: React.FC = () => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = async (event) => {
                 const content = event.target?.result as string;
-                const success = storage.importData(content);
+                const success = await firebaseStorage.importData(content);
                 if (success) {
-                    refresh();
+                    await refresh();
                     alert('Data imported successfully!');
                 } else {
                     alert('Failed to import data. Please check the file format.');
@@ -331,14 +336,14 @@ export const SettingsEditor: React.FC = () => {
                                 Reset portfolio to initial demo data (this cannot be undone)
                             </p>
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     if (
                                         confirm(
                                             'Are you sure you want to reset all data? This cannot be undone.'
                                         )
                                     ) {
-                                        storage.reset();
-                                        refresh();
+                                        await firebaseStorage.reset();
+                                        await refresh();
                                         alert('Data has been reset to defaults.');
                                     }
                                 }}

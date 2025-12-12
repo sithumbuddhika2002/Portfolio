@@ -1,35 +1,58 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { PortfolioData } from '../types/portfolio';
-import { storage } from '../services/storage';
+import { firebaseStorage } from '../services/firebaseStorage';
 
 interface PortfolioContextType {
     data: PortfolioData;
-    updateData: (newData: PortfolioData) => void;
-    updateSection: <K extends keyof PortfolioData>(section: K, sectionData: PortfolioData[K]) => void;
-    refresh: () => void;
+    loading: boolean;
+    updateData: (newData: PortfolioData) => Promise<void>;
+    updateSection: <K extends keyof PortfolioData>(section: K, sectionData: PortfolioData[K]) => Promise<void>;
+    refresh: () => Promise<void>;
     syncWithGitHub: () => Promise<boolean>;
 }
 
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [data, setData] = useState<PortfolioData>(storage.getData());
+    const [data, setData] = useState<PortfolioData>({} as PortfolioData);
+    const [loading, setLoading] = useState(true);
 
-    const refresh = () => {
-        setData(storage.getData());
+    // Initialize data and set up real-time listener
+    useEffect(() => {
+        const initializeData = async () => {
+            setLoading(true);
+            const initialData = await firebaseStorage.getData();
+            setData(initialData);
+            setLoading(false);
+        };
+
+        initializeData();
+
+        // Subscribe to real-time changes
+        const unsubscribe = firebaseStorage.subscribeToChanges((updatedData) => {
+            console.log('🔄 Real-time update received from Firestore');
+            setData(updatedData);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    const refresh = async () => {
+        const refreshedData = await firebaseStorage.getData();
+        setData(refreshedData);
     };
 
-    const updateData = (newData: PortfolioData) => {
-        storage.setData(newData);
+    const updateData = async (newData: PortfolioData) => {
+        await firebaseStorage.setData(newData);
         setData(newData);
     };
 
-    const updateSection = <K extends keyof PortfolioData>(
+    const updateSection = async <K extends keyof PortfolioData>(
         section: K,
         sectionData: PortfolioData[K]
     ) => {
-        storage.updateSection(section, sectionData);
-        refresh();
+        await firebaseStorage.updateSection(section, sectionData);
+        await refresh();
     };
 
     const syncWithGitHub = async () => {
@@ -42,7 +65,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                     ...data.profile,
                     ...githubProfile,
                 };
-                updateSection('profile', updatedProfile);
+                await updateSection('profile', updatedProfile);
                 return true;
             }
         } catch (error) {
@@ -52,7 +75,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     return (
-        <PortfolioContext.Provider value={{ data, updateData, updateSection, refresh, syncWithGitHub }}>
+        <PortfolioContext.Provider value={{ data, loading, updateData, updateSection, refresh, syncWithGitHub }}>
             {children}
         </PortfolioContext.Provider>
     );

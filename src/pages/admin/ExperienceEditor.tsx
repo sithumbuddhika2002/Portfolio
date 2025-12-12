@@ -10,12 +10,17 @@ export const ExperienceEditor: React.FC = () => {
     const [education, setEducation] = useState(data.education);
     const [saved, setSaved] = useState(false);
 
-    const handleSave = () => {
-        updateSection('experience', experience);
-        updateSection('education', education);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+    const handleSave = async () => {
+        try {
+            await updateSection('experience', experience);
+            await updateSection('education', education);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+        } catch (error) {
+            console.error('Error saving experience/education:', error);
+        }
     };
+
 
     const handleAddWork = () => {
         const newExp: Experience = {

@@ -13,10 +13,14 @@ export const ProjectsEditor: React.FC = () => {
     const [saved, setSaved] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
 
-    const handleSave = () => {
-        updateSection('projects', projects);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+    const handleSave = async () => {
+        try {
+            await updateSection('projects', projects);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+        } catch (error) {
+            console.error('Error saving projects:', error);
+        }
     };
 
     const handleAdd = () => {
@@ -35,16 +39,16 @@ export const ProjectsEditor: React.FC = () => {
         setEditingProject(newProject);
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         const newProjects = projects.filter((p) => p.id !== id);
         setProjects(newProjects);
-        updateSection('projects', newProjects);
+        await updateSection('projects', newProjects);
         if (editingProject?.id === id) {
             setEditingProject(null);
         }
     };
 
-    const handleUpdate = (updatedProject: Project) => {
+    const handleUpdate = async (updatedProject: Project) => {
         let newProjects;
         const exists = projects.some((p) => p.id === updatedProject.id);
 
@@ -57,7 +61,7 @@ export const ProjectsEditor: React.FC = () => {
         }
 
         setProjects(newProjects);
-        updateSection('projects', newProjects); // Auto-save
+        await updateSection('projects', newProjects); // Auto-save
         setEditingProject(null);
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);

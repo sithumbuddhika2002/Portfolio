@@ -10,11 +10,16 @@ export const SkillsEditor: React.FC = () => {
     const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
     const [saved, setSaved] = useState(false);
 
-    const handleSave = () => {
-        updateSection('skills', skills);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+    const handleSave = async () => {
+        try {
+            await updateSection('skills', skills);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+        } catch (error) {
+            console.error('Error saving skills:', error);
+        }
     };
+
 
     const handleAdd = () => {
         const newSkill: Skill = {

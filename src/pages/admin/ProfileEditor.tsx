@@ -7,12 +7,18 @@ export const ProfileEditor: React.FC = () => {
     const [profile, setProfile] = useState(data.profile);
     const [saved, setSaved] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        updateSection('profile', profile);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        try {
+            await updateSection('profile', profile);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            alert('Failed to save changes. Please check your Firebase configuration.');
+        }
     };
+
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
