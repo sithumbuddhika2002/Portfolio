@@ -7,6 +7,34 @@ export const HeroSection: React.FC = () => {
     const { data } = usePortfolioData();
     const { profile } = data;
 
+    const handleResumeDownload = () => {
+        if (!profile.resumeUrl) return;
+
+        // Check if it's a Base64 encoded file
+        if (profile.resumeUrl.startsWith('data:')) {
+            // Extract MIME type and create download
+            const mimeMatch = profile.resumeUrl.match(/data:([^;]+);/);
+            const mimeType = mimeMatch ? mimeMatch[1] : 'application/pdf';
+
+            // Determine file extension from MIME type
+            let extension = '.pdf';
+            if (mimeType.includes('msword') || mimeType.includes('document')) {
+                extension = mimeType.includes('wordprocessingml') ? '.docx' : '.doc';
+            }
+
+            // Create a link element and trigger download
+            const link = document.createElement('a');
+            link.href = profile.resumeUrl;
+            link.download = `${profile.name.replace(/\s+/g, '_')}_Resume${extension}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            // It's a URL, open in new tab
+            window.open(profile.resumeUrl, '_blank', 'noopener,noreferrer');
+        }
+    };
+
     return (
         <section
             id="home"
@@ -73,16 +101,16 @@ export const HeroSection: React.FC = () => {
                             >
                                 Get In Touch
                             </motion.a>
-                            <motion.a
-                                href={profile.resumeUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn-secondary"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                Download CV
-                            </motion.a>
+                            {profile.resumeUrl && (
+                                <motion.button
+                                    onClick={handleResumeDownload}
+                                    className="btn-secondary"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    Download CV
+                                </motion.button>
+                            )}
                         </motion.div>
                     </motion.div>
 
