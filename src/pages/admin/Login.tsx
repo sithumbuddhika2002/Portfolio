@@ -15,15 +15,19 @@ export const Login: React.FC = () => {
         setError('');
         setIsLoading(true);
 
-        setTimeout(() => {
-            const success = auth.login(formData.username, formData.password);
+        try {
+            const success = await auth.login(formData.username, formData.password);
             if (success) {
                 navigate('/admin/dashboard');
             } else {
                 setError('Invalid username or password');
             }
+        } catch (error) {
+            console.error('Login error:', error);
+            setError('An error occurred during login. Please try again.');
+        } finally {
             setIsLoading(false);
-        }, 500);
+        }
     };
 
     return (

@@ -1,4 +1,4 @@
-import { storage } from './storage';
+import { firebaseStorage } from './firebaseStorage';
 
 const AUTH_KEY = 'auth_state';
 
@@ -29,9 +29,9 @@ export const auth = {
     },
 
     // Login
-    login: (username: string, password: string): boolean => {
+    login: async (username: string, password: string): Promise<boolean> => {
         try {
-            const data = storage.getData();
+            const data = await firebaseStorage.getData();
             const adminCredentials = data?.settings?.adminCredentials;
 
             // Check against stored credentials
@@ -104,10 +104,10 @@ export const auth = {
     },
 
     // Update admin credentials
-    updateCredentials: (username: string, password: string): void => {
-        const data = storage.getData();
+    updateCredentials: async (username: string, password: string): Promise<void> => {
+        const data = await firebaseStorage.getData();
         data.settings.adminCredentials = { username, password };
-        storage.setData(data);
+        await firebaseStorage.setData(data);
 
         // Update current auth state
         const authState: AuthState = {
@@ -115,5 +115,6 @@ export const auth = {
             user: { username },
         };
         localStorage.setItem(AUTH_KEY, JSON.stringify(authState));
+        console.log('✅ Credentials updated in Firestore');
     },
 };
