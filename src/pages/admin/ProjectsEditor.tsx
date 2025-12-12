@@ -9,7 +9,7 @@ import { compressImage } from '../../utils/fileUtils';
 export const ProjectsEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
     const { showSuccess, showError } = useToast();
-    const [projects, setProjects] = useState(data.projects);
+    const [projects, setProjects] = useState(data.projects || []);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 

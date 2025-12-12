@@ -8,7 +8,7 @@ import { useToast } from '../../contexts/ToastContext';
 export const SkillsEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
     const { showSuccess, showError } = useToast();
-    const [skills, setSkills] = useState(data.skills);
+    const [skills, setSkills] = useState(data.skills || []);
     const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
 
     const handleSave = async () => {

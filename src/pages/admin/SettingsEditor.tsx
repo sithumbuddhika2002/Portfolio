@@ -9,8 +9,8 @@ import { useToast } from '../../contexts/ToastContext';
 export const SettingsEditor: React.FC = () => {
     const { data, updateSection, refresh } = usePortfolioData();
     const { showSuccess, showError } = useToast();
-    const [settings, setSettings] = useState(data.settings);
-    const [contact, setContact] = useState(data.contact);
+    const [settings, setSettings] = useState(data.settings || { siteTitle: '', tagline: '', metaDescription: '', season: 'none' as const });
+    const [contact, setContact] = useState(data.contact || { email: '', phone: '', location: '', social: {} });
     const [credentials, setCredentials] = useState({
         username: '',
         password: '',

@@ -8,8 +8,8 @@ import { useToast } from '../../contexts/ToastContext';
 export const ExperienceEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
     const { showSuccess, showError } = useToast();
-    const [experience, setExperience] = useState(data.experience);
-    const [education, setEducation] = useState(data.education);
+    const [experience, setExperience] = useState(data.experience || []);
+    const [education, setEducation] = useState(data.education || []);
 
     const handleSave = async () => {
         try {
