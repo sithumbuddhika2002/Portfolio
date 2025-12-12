@@ -9,11 +9,23 @@ import { ContactSection } from '../components/portfolio/ContactSection';
 import { usePortfolioData } from '../hooks/usePortfolioData';
 
 export const Portfolio: React.FC = () => {
-    const { syncWithGitHub } = usePortfolioData();
+    const { syncWithGitHub, loading } = usePortfolioData();
 
     useEffect(() => {
         syncWithGitHub();
     }, []);
+
+    // Show loading spinner while data loads from Firebase
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600"></div>
+                    <p className="mt-4 text-gray-600 dark:text-gray-400">Loading portfolio...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen">

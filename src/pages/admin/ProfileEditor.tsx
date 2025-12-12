@@ -1,11 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 
 export const ProfileEditor: React.FC = () => {
-    const { data, updateSection } = usePortfolioData();
-    const [profile, setProfile] = useState(data.profile);
+    const { data, updateSection, loading } = usePortfolioData();
+    const [profile, setProfile] = useState(data.profile || {
+        name: '',
+        title: '',
+        bio: '',
+        image: '',
+        email: '',
+        phone: '',
+        location: '',
+        resumeUrl: ''
+    });
     const [saved, setSaved] = useState(false);
+
+    // Update local state when data loads
+    useEffect(() => {
+        if (data.profile) {
+            setProfile(data.profile);
+        }
+    }, [data.profile]);
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -18,6 +35,19 @@ export const ProfileEditor: React.FC = () => {
             alert('Failed to save changes. Please check your Firebase configuration.');
         }
     };
+
+    // Show loading while data loads
+    if (loading || !data.profile) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-primary-600"></div>
+                    <p className="mt-4 text-gray-600 dark:text-gray-400">Loading profile...</p>
+                </div>
+            </div>
+        );
+    }
+
 
 
     const handleChange = (
