@@ -2,6 +2,12 @@ import { storage } from './storage';
 
 const AUTH_KEY = 'auth_state';
 
+// Hardcoded fallback credentials to prevent lockout
+const FALLBACK_CREDENTIALS = {
+    username: 'sithum',
+    password: 'Sithum0213',
+};
+
 export interface AuthState {
     isAuthenticated: boolean;
     user: { username: string } | null;
@@ -24,21 +30,58 @@ export const auth = {
 
     // Login
     login: (username: string, password: string): boolean => {
-        const data = storage.getData();
-        const { adminCredentials } = data.settings;
+        try {
+            const data = storage.getData();
+            const adminCredentials = data?.settings?.adminCredentials;
 
-        if (
-            username === adminCredentials.username &&
-            password === adminCredentials.password
-        ) {
-            const authState: AuthState = {
-                isAuthenticated: true,
-                user: { username },
-            };
-            localStorage.setItem(AUTH_KEY, JSON.stringify(authState));
-            return true;
+            // Check against stored credentials
+            if (
+                adminCredentials &&
+                username === adminCredentials.username &&
+                password === adminCredentials.password
+            ) {
+                const authState: AuthState = {
+                    isAuthenticated: true,
+                    user: { username },
+                };
+                localStorage.setItem(AUTH_KEY, JSON.stringify(authState));
+                return true;
+            }
+
+            // Fallback to hardcoded credentials (prevents lockout)
+            if (
+                username === FALLBACK_CREDENTIALS.username &&
+                password === FALLBACK_CREDENTIALS.password
+            ) {
+                const authState: AuthState = {
+                    isAuthenticated: true,
+                    user: { username },
+                };
+                localStorage.setItem(AUTH_KEY, JSON.stringify(authState));
+                console.log('✅ Logged in with fallback credentials');
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            console.error('Login error:', error);
+
+            // If there's any error, try fallback credentials
+            if (
+                username === FALLBACK_CREDENTIALS.username &&
+                password === FALLBACK_CREDENTIALS.password
+            ) {
+                const authState: AuthState = {
+                    isAuthenticated: true,
+                    user: { username },
+                };
+                localStorage.setItem(AUTH_KEY, JSON.stringify(authState));
+                console.log('✅ Logged in with fallback credentials (error recovery)');
+                return true;
+            }
+
+            return false;
         }
-        return false;
     },
 
     // Logout
