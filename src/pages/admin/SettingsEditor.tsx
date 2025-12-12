@@ -28,21 +28,16 @@ export const SettingsEditor: React.FC = () => {
         }
     };
 
-    const handleUpdateCredentials = async (e: React.FormEvent) => {
+    const handleUpdateCredentials = (e: React.FormEvent) => {
         e.preventDefault();
         if (credentials.password !== credentials.confirmPassword) {
             showError('Passwords do not match!');
             return;
         }
         if (credentials.username && credentials.password) {
-            try {
-                await auth.updateCredentials(credentials.username, credentials.password);
-                setCredentials({ username: '', password: '', confirmPassword: '' });
-                showSuccess('Credentials updated successfully! 🔒');
-            } catch (error) {
-                console.error('Error updating credentials:', error);
-                showError('Failed to update credentials. Please try again.');
-            }
+            auth.updateCredentials(credentials.username, credentials.password);
+            setCredentials({ username: '', password: '', confirmPassword: '' });
+            showSuccess('Credentials updated successfully! 🔒');
         }
     };
 
