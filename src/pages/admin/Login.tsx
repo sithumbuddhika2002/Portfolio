@@ -114,10 +114,7 @@ export const Login: React.FC = () => {
                         </motion.button>
                     </form>
 
-                    {/* Default Credentials Hint */}
-                    <div className="mt-6 text-center text-sm text-white/70">
-                        <p>Default: sithum / Sithum0213</p>
-                    </div>
+
 
                     {/* Back to Portfolio */}
                     <motion.a
