@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import type { Unsubscribe } from 'firebase/firestore';
 
 import { db } from '../config/firebaseConfig';
@@ -19,13 +19,12 @@ export const firebaseStorage = {
                 return docSnap.data() as PortfolioData;
             } else {
                 // Initialize with default data if not exists
-                console.log('📝 Document does not exist, initializing with default data');
                 await firebaseStorage.setData(initialData);
                 return initialData;
             }
         } catch (error) {
             console.error('Error reading from Firestore:', error);
-            throw error;
+            return initialData;
         }
     },
 
@@ -46,22 +45,9 @@ export const firebaseStorage = {
         section: K,
         data: PortfolioData[K]
     ): Promise<void> => {
-        try {
-            const docRef = doc(db, COLLECTION_NAME, DOCUMENT_ID);
-            await updateDoc(docRef, { [section]: data });
-            console.log(`✅ Section ${section} updated in Firestore`);
-        } catch (error) {
-            console.error(`Error updating section ${section}:`, error);
-            // If document doesn't exist or other error, try setDoc with merge
-            try {
-                const docRef = doc(db, COLLECTION_NAME, DOCUMENT_ID);
-                await setDoc(docRef, { [section]: data }, { merge: true });
-                console.log(`✅ Section ${section} created/updated with merge`);
-            } catch (retryError) {
-                console.error('Retry failed:', retryError);
-                throw retryError;
-            }
-        }
+        const currentData = await firebaseStorage.getData();
+        currentData[section] = data;
+        await firebaseStorage.setData(currentData);
     },
 
     // Reset to initial data

@@ -21,18 +21,9 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     useEffect(() => {
         const initializeData = async () => {
             setLoading(true);
-            try {
-                const fetchedData = await firebaseStorage.getData();
-                setData(fetchedData);
-            } catch (error) {
-                console.error('Failed to fetch portfolio data:', error);
-                // Fallback to initial data if fetch fails (offline mode)
-                // We import initialData from direct import, not from firebaseStorage internal fallback
-                const { initialData } = await import('../data/initialData');
-                setData(initialData);
-            } finally {
-                setLoading(false);
-            }
+            const initialData = await firebaseStorage.getData();
+            setData(initialData);
+            setLoading(false);
         };
 
         initializeData();
