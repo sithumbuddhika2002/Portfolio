@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { fadeIn, slideUp, staggerContainer } from '../utils/animations';
 import { Navbar } from '../components/common/Navbar';
 import { HeroSection } from '../components/portfolio/HeroSection';
 import { AboutSection } from '../components/portfolio/AboutSection';
@@ -28,23 +30,28 @@ export const Portfolio: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen">
+        <motion.div
+            className="min-h-screen"
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+        >
             <Navbar />
-            <HeroSection />
-            <AboutSection />
-            <SkillsSection />
-            <ProjectsSection />
-            <ExperienceSection />
-            <ContactSection />
+            <motion.div variants={fadeIn}><HeroSection /></motion.div>
+            <motion.div variants={fadeIn}><AboutSection /></motion.div>
+            <motion.div variants={fadeIn}><SkillsSection /></motion.div>
+            <motion.div variants={fadeIn}><ProjectsSection /></motion.div>
+            <motion.div variants={fadeIn}><ExperienceSection /></motion.div>
+            <motion.div variants={fadeIn}><ContactSection /></motion.div>
 
             {/* Footer */}
-            <footer className="bg-gray-900 text-white py-8">
+            <motion.footer variants={slideUp} className="bg-gray-900 text-white py-8">
                 <div className="max-w-7xl mx-auto px-4 text-center">
                     <p className="text-gray-400">
                         © {new Date().getFullYear()} Portfolio. Built with React, TypeScript & Tailwind CSS
                     </p>
                 </div>
-            </footer>
-        </div>
+            </motion.footer>
+        </motion.div>
     );
 };
