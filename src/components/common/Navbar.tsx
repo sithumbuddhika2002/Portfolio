@@ -54,7 +54,7 @@ export const Navbar: React.FC = () => {
                                 e.preventDefault();
                                 scrollToSection('#home');
                             }}
-                            className="text-2xl font-bold font-display gradient-text"
+                            className="text-xl sm:text-2xl font-bold font-display gradient-text truncate"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
@@ -63,7 +63,7 @@ export const Navbar: React.FC = () => {
                     </div>
 
                     {/* Desktop Navigation (Center) */}
-                    <div className="hidden md:flex items-center justify-center space-x-8">
+                    <div className="hidden md:flex items-center justify-center space-x-4 lg:space-x-8">
                         {navLinks.map((link, index) => (
                             <motion.a
                                 key={link.name}
@@ -72,7 +72,7 @@ export const Navbar: React.FC = () => {
                                     e.preventDefault();
                                     scrollToSection(link.href);
                                 }}
-                                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors"
+                                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors whitespace-nowrap"
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
@@ -88,9 +88,10 @@ export const Navbar: React.FC = () => {
                         {/* Dark Mode Toggle */}
                         <motion.button
                             onClick={toggle}
-                            className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
+                            className="p-2 rounded-lg bg-gray-200/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors shadow-sm"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
+                            aria-label="Toggle dark mode"
                         >
                             {isDark ? (
                                 <SunIcon className="w-5 h-5" />
@@ -103,8 +104,9 @@ export const Navbar: React.FC = () => {
                         <div className="md:hidden flex items-center">
                             <motion.button
                                 onClick={() => setIsOpen(!isOpen)}
-                                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800"
+                                className="p-2 rounded-lg bg-gray-200/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors shadow-sm"
                                 whileTap={{ scale: 0.9 }}
+                                aria-label="Toggle menu"
                             >
                                 {isOpen ? (
                                     <XMarkIcon className="w-6 h-6" />
@@ -121,12 +123,12 @@ export const Navbar: React.FC = () => {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden glass-strong mt-4"
+                        initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                        className="md:hidden glass-strong mt-4 mx-4 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
                     >
-                        <div className="px-4 py-6 space-y-4">
+                        <div className="px-4 py-8 space-y-6 flex flex-col items-center">
                             {navLinks.map((link, index) => (
                                 <motion.a
                                     key={link.name}
@@ -135,7 +137,7 @@ export const Navbar: React.FC = () => {
                                         e.preventDefault();
                                         scrollToSection(link.href);
                                     }}
-                                    className="block text-center text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                    className="w-full text-center text-xl font-semibold text-gray-800 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 py-3 rounded-xl hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300"
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: index * 0.1 }}
