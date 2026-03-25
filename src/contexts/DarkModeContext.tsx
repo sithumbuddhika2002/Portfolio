@@ -17,7 +17,7 @@ export const DarkModeProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
     const [isDark, setIsDark] = useState(() => {
         const saved = localStorage.getItem('dark-mode');
-        return saved ? JSON.parse(saved) : false;
+        return saved ? JSON.parse(saved) : true;
     });
 
     useEffect(() => {

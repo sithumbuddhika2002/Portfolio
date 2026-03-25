@@ -16,8 +16,11 @@ export const SettingsEditor: React.FC = () => {
         password: '',
         confirmPassword: '',
     });
+    const [isSavingSettings, setIsSavingSettings] = useState(false);
+    const [isUpdatingCredentials, setIsUpdatingCredentials] = useState(false);
 
     const handleSaveSettings = async () => {
+        setIsSavingSettings(true);
         try {
             await updateSection('settings', settings);
             await updateSection('contact', contact);
@@ -25,19 +28,31 @@ export const SettingsEditor: React.FC = () => {
         } catch (error) {
             console.error('Error saving settings:', error);
             showError('Failed to save settings. Please try again.');
+        } finally {
+            setIsSavingSettings(false);
         }
     };
 
-    const handleUpdateCredentials = (e: React.FormEvent) => {
+    const handleUpdateCredentials = async (e: React.FormEvent) => {
         e.preventDefault();
         if (credentials.password !== credentials.confirmPassword) {
             showError('Passwords do not match!');
             return;
         }
         if (credentials.username && credentials.password) {
-            auth.updateCredentials(credentials.username, credentials.password);
-            setCredentials({ username: '', password: '', confirmPassword: '' });
-            showSuccess('Credentials updated successfully! 🔒');
+            setIsUpdatingCredentials(true);
+            try {
+                // Simulate network delay to show loading animation safely
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await auth.updateCredentials(credentials.username, credentials.password);
+                setCredentials({ username: '', password: '', confirmPassword: '' });
+                showSuccess('Credentials updated successfully! 🔒');
+            } catch (error) {
+                console.error('Error updating credentials:', error);
+                showError('Failed to update credentials. Please try again.');
+            } finally {
+                setIsUpdatingCredentials(false);
+            }
         }
     };
 
@@ -228,11 +243,19 @@ export const SettingsEditor: React.FC = () => {
 
                         <motion.button
                             onClick={handleSaveSettings}
-                            className="btn-primary"
+                            className="btn-primary flex items-center justify-center gap-2"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            disabled={isSavingSettings}
                         >
-                            Save Settings
+                            {isSavingSettings ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                'Save Settings'
+                            )}
                         </motion.button>
                     </div>
                 </motion.div>
@@ -292,11 +315,19 @@ export const SettingsEditor: React.FC = () => {
 
                         <motion.button
                             type="submit"
-                            className="btn-primary"
+                            className="btn-primary flex items-center justify-center gap-2"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            disabled={isUpdatingCredentials}
                         >
-                            Update Credentials
+                            {isUpdatingCredentials ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Updating...
+                                </>
+                            ) : (
+                                'Update Credentials'
+                            )}
                         </motion.button>
                     </form>
                 </motion.div>

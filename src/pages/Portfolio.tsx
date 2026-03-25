@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Navbar } from '../components/common/Navbar';
 import { HeroSection } from '../components/portfolio/HeroSection';
 import { AboutSection } from '../components/portfolio/AboutSection';
@@ -9,11 +9,7 @@ import { ContactSection } from '../components/portfolio/ContactSection';
 import { usePortfolioData } from '../hooks/usePortfolioData';
 
 export const Portfolio: React.FC = () => {
-    const { syncWithGitHub, loading } = usePortfolioData();
-
-    useEffect(() => {
-        syncWithGitHub();
-    }, []);
+    const { loading } = usePortfolioData();
 
     // Show loading spinner while data loads from Firebase
     if (loading) {
@@ -41,7 +37,7 @@ export const Portfolio: React.FC = () => {
             <footer className="bg-gray-900 text-white py-8">
                 <div className="max-w-7xl mx-auto px-4 text-center">
                     <p className="text-gray-400">
-                        © {new Date().getFullYear()} Portfolio. Built with React, TypeScript & Tailwind CSS
+                        © {new Date().getFullYear()} All Right Reserved | Sithum Buddhika
                     </p>
                 </div>
             </footer>

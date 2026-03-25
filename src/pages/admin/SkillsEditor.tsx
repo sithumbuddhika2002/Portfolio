@@ -10,14 +10,18 @@ export const SkillsEditor: React.FC = () => {
     const { showSuccess, showError } = useToast();
     const [skills, setSkills] = useState(data.skills || []);
     const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
+        setIsSaving(true);
         try {
             await updateSection('skills', skills);
             showSuccess('Skills updated successfully! 🎉');
         } catch (error) {
             console.error('Error saving skills:', error);
             showError('Failed to save skills. Please try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -67,11 +71,19 @@ export const SkillsEditor: React.FC = () => {
                     </motion.button>
                     <motion.button
                         onClick={handleSave}
-                        className="btn-primary"
+                        className="btn-primary flex items-center justify-center gap-2"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        disabled={isSaving}
                     >
-                        Save All
+                        {isSaving ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            'Save All'
+                        )}
                     </motion.button>
                 </div>
             </motion.div>

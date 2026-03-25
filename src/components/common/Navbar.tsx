@@ -44,22 +44,24 @@ export const Navbar: React.FC = () => {
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between">
-                    {/* Logo */}
-                    <motion.a
-                        href="#home"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            scrollToSection('#home');
-                        }}
-                        className="text-2xl font-bold font-display gradient-text"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        Portfolio
-                    </motion.a>
+                    {/* Logo Section */}
+                    <div className="flex flex-1 items-center justify-start">
+                        <motion.a
+                            href="#home"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                scrollToSection('#home');
+                            }}
+                            className="text-2xl font-bold font-display gradient-text"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            Portfolio
+                        </motion.a>
+                    </div>
 
-                    {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center space-x-8">
+                    {/* Desktop Navigation (Center) */}
+                    <div className="hidden md:flex items-center justify-center space-x-8">
                         {navLinks.map((link, index) => (
                             <motion.a
                                 key={link.name}
@@ -77,7 +79,10 @@ export const Navbar: React.FC = () => {
                                 {link.name}
                             </motion.a>
                         ))}
+                    </div>
 
+                    {/* Right Controls */}
+                    <div className="flex flex-1 items-center justify-end space-x-4">
                         {/* Dark Mode Toggle */}
                         <motion.button
                             onClick={toggle}
@@ -91,33 +96,21 @@ export const Navbar: React.FC = () => {
                                 <MoonIcon className="w-5 h-5" />
                             )}
                         </motion.button>
-                    </div>
 
-                    {/* Mobile Menu Button */}
-                    <div className="md:hidden flex items-center space-x-4">
-                        <motion.button
-                            onClick={toggle}
-                            className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800"
-                            whileTap={{ scale: 0.9 }}
-                        >
-                            {isDark ? (
-                                <SunIcon className="w-5 h-5" />
-                            ) : (
-                                <MoonIcon className="w-5 h-5" />
-                            )}
-                        </motion.button>
-
-                        <motion.button
-                            onClick={() => setIsOpen(!isOpen)}
-                            className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800"
-                            whileTap={{ scale: 0.9 }}
-                        >
-                            {isOpen ? (
-                                <XMarkIcon className="w-6 h-6" />
-                            ) : (
-                                <Bars3Icon className="w-6 h-6" />
-                            )}
-                        </motion.button>
+                        {/* Mobile Menu Button */}
+                        <div className="md:hidden flex items-center">
+                            <motion.button
+                                onClick={() => setIsOpen(!isOpen)}
+                                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800"
+                                whileTap={{ scale: 0.9 }}
+                            >
+                                {isOpen ? (
+                                    <XMarkIcon className="w-6 h-6" />
+                                ) : (
+                                    <Bars3Icon className="w-6 h-6" />
+                                )}
+                            </motion.button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -140,7 +133,7 @@ export const Navbar: React.FC = () => {
                                         e.preventDefault();
                                         scrollToSection(link.href);
                                     }}
-                                    className="block text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                    className="block text-center text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: index * 0.1 }}

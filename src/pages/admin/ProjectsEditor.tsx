@@ -12,14 +12,19 @@ export const ProjectsEditor: React.FC = () => {
     const [projects, setProjects] = useState(data.projects || []);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [isSavingAll, setIsSavingAll] = useState(false);
+    const [isSavingProject, setIsSavingProject] = useState(false);
 
     const handleSave = async () => {
+        setIsSavingAll(true);
         try {
             await updateSection('projects', projects);
             showSuccess('Projects updated successfully! 🎉');
         } catch (error) {
             console.error('Error saving projects:', error);
             showError('Failed to save projects. Please try again.');
+        } finally {
+            setIsSavingAll(false);
         }
     };
 
@@ -55,6 +60,7 @@ export const ProjectsEditor: React.FC = () => {
     };
 
     const handleUpdate = async (updatedProject: Project) => {
+        setIsSavingProject(true);
         try {
             let newProjects;
             const exists = projects.some((p) => p.id === updatedProject.id);
@@ -74,6 +80,8 @@ export const ProjectsEditor: React.FC = () => {
         } catch (error) {
             console.error('Error saving project:', error);
             showError('Failed to save project. Please try again.');
+        } finally {
+            setIsSavingProject(false);
         }
     };
 
@@ -120,11 +128,19 @@ export const ProjectsEditor: React.FC = () => {
                     </motion.button>
                     <motion.button
                         onClick={handleSave}
-                        className="btn-primary"
+                        className="btn-primary flex items-center justify-center gap-2"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        disabled={isSavingAll}
                     >
-                        Save All
+                        {isSavingAll ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            'Save All'
+                        )}
                     </motion.button>
                 </div>
             </motion.div>
@@ -364,9 +380,17 @@ export const ProjectsEditor: React.FC = () => {
                             <div className="flex gap-3 pt-4">
                                 <button
                                     onClick={() => handleUpdate(editingProject)}
-                                    className="btn-primary flex-1"
+                                    className="btn-primary flex-1 flex items-center justify-center gap-2"
+                                    disabled={isSavingProject}
                                 >
-                                    Save Changes
+                                    {isSavingProject ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        'Save Changes'
+                                    )}
                                 </button>
                                 <button
                                     onClick={() => setEditingProject(null)}

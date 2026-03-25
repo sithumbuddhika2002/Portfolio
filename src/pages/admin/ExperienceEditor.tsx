@@ -10,8 +10,10 @@ export const ExperienceEditor: React.FC = () => {
     const { showSuccess, showError } = useToast();
     const [experience, setExperience] = useState(data.experience || []);
     const [education, setEducation] = useState(data.education || []);
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
+        setIsSaving(true);
         try {
             await updateSection('experience', experience);
             await updateSection('education', education);
@@ -19,6 +21,8 @@ export const ExperienceEditor: React.FC = () => {
         } catch (error) {
             console.error('Error saving experience/education:', error);
             showError('Failed to save changes. Please try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -68,11 +72,19 @@ export const ExperienceEditor: React.FC = () => {
                 </div>
                 <motion.button
                     onClick={handleSave}
-                    className="btn-primary"
+                    className="btn-primary flex items-center justify-center gap-2"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    disabled={isSaving}
                 >
-                    Save All
+                    {isSaving ? (
+                        <>
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Saving...
+                        </>
+                    ) : (
+                        'Save All'
+                    )}
                 </motion.button>
             </motion.div>
 
