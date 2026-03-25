@@ -51,18 +51,18 @@ export const SkillsEditor: React.FC = () => {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8 flex items-center justify-between"
+                className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center justify-between"
             >
                 <div>
-                    <h1 className="text-3xl font-bold font-display mb-2">Manage Skills</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display mb-2">Manage Skills</h1>
                     <p className="text-gray-600 dark:text-gray-400">
                         Add, edit, or remove your skills
                     </p>
                 </div>
-                <div className="space-x-3">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <motion.button
                         onClick={handleAdd}
-                        className="btn-secondary"
+                        className="btn-secondary w-full sm:w-auto text-center"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
@@ -71,7 +71,7 @@ export const SkillsEditor: React.FC = () => {
                     </motion.button>
                     <motion.button
                         onClick={handleSave}
-                        className="btn-primary flex items-center justify-center gap-2"
+                        className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         disabled={isSaving}

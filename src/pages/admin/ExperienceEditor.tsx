@@ -60,10 +60,10 @@ export const ExperienceEditor: React.FC = () => {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8 flex items-center justify-between"
+                className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center justify-between"
             >
                 <div>
-                    <h1 className="text-3xl font-bold font-display mb-2">
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display mb-2">
                         Manage Experience
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
@@ -72,7 +72,7 @@ export const ExperienceEditor: React.FC = () => {
                 </div>
                 <motion.button
                     onClick={handleSave}
-                    className="btn-primary flex items-center justify-center gap-2"
+                    className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     disabled={isSaving}
@@ -90,9 +90,9 @@ export const ExperienceEditor: React.FC = () => {
 
             {/* Work Experience */}
             <div className="mb-12">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold">Work Experience</h2>
-                    <button onClick={handleAddWork} className="btn-secondary">
+                    <button onClick={handleAddWork} className="btn-secondary w-full sm:w-auto text-center">
                         <PlusIcon className="w-5 h-5 inline mr-2" />
                         Add Work
                     </button>
@@ -150,7 +150,7 @@ export const ExperienceEditor: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold mb-2">
                                         Start Date
@@ -218,9 +218,9 @@ export const ExperienceEditor: React.FC = () => {
 
             {/* Education */}
             <div>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold">Education</h2>
-                    <button onClick={handleAddEducation} className="btn-secondary">
+                    <button onClick={handleAddEducation} className="btn-secondary w-full sm:w-auto text-center">
                         <PlusIcon className="w-5 h-5 inline mr-2" />
                         Add Education
                     </button>
@@ -276,7 +276,7 @@ export const ExperienceEditor: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold mb-2">
                                         Start Date

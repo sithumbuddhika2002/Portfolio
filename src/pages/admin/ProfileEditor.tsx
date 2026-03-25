@@ -69,7 +69,7 @@ export const ProfileEditor: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-8"
             >
-                <h1 className="text-3xl font-bold font-display mb-2">Edit Profile</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold font-display mb-2">Edit Profile</h1>
                 <p className="text-gray-600 dark:text-gray-400">
                     Update your personal information and bio
                 </p>

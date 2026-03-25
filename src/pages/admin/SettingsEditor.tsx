@@ -97,7 +97,7 @@ export const SettingsEditor: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-8"
             >
-                <h1 className="text-3xl font-bold font-display mb-2">Settings</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold font-display mb-2">Settings</h1>
                 <p className="text-gray-600 dark:text-gray-400">
                     Configure your portfolio and account settings
                 </p>
