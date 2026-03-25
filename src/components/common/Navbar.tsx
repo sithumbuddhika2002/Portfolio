@@ -26,11 +26,13 @@ export const Navbar: React.FC = () => {
     }, []);
 
     const scrollToSection = (href: string) => {
-        const element = document.querySelector(href);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-            setIsOpen(false);
-        }
+        setIsOpen(false);
+        setTimeout(() => {
+            const element = document.querySelector(href);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 300);
     };
 
     return (
