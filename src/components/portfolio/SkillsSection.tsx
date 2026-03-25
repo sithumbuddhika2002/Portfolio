@@ -65,7 +65,7 @@ export const SkillsSection: React.FC = () => {
                     </p>
                 </motion.div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                     {skills.map((skill, index) => {
                         const iconUrl = githubService.getSkillIcon(skill.name);
 
@@ -83,8 +83,8 @@ export const SkillsSection: React.FC = () => {
                                 whileHover={{ y: -5 }}
                                 className="group relative"
                             >
-                                <div className="p-4 bg-gray-900 rounded-2xl border border-gray-800 hover:border-gray-700 transition-colors duration-300 flex items-center gap-4">
-                                    <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-800 rounded-xl p-2 group-hover:bg-gray-700 transition-colors duration-300 overflow-hidden">
+                                <div className="p-3 sm:p-4 bg-gray-100 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors duration-300 flex items-center gap-3 sm:gap-4">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-xl p-2 group-hover:bg-gray-300 dark:group-hover:bg-gray-700 transition-colors duration-300 overflow-hidden">
                                         {hasCustomIcon ? (
                                             isSvg ? (
                                                 <div
@@ -105,14 +105,14 @@ export const SkillsSection: React.FC = () => {
                                                 className="w-full h-full object-contain"
                                             />
                                         ) : (
-                                            <span className="text-xl font-bold text-white">
+                                            <span className="text-xl font-bold text-gray-900 dark:text-white">
                                                 {skill.name[0]}
                                             </span>
                                         )}
                                     </div>
 
                                     <div className="flex flex-col">
-                                        <h4 className="font-bold text-gray-100 text-base leading-tight">
+                                        <h4 className="font-bold text-gray-900 dark:text-gray-100 text-sm sm:text-base leading-tight">
                                             {skill.name}
                                         </h4>
                                         <span className="text-sm text-gray-500 font-medium">

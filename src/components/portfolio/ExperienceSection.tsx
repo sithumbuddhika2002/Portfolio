@@ -34,7 +34,7 @@ export const ExperienceSection: React.FC = () => {
                     <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-primary-500 via-accent-500 to-primary-500 hidden md:block" />
 
                     {/* Timeline Items */}
-                    <div className="space-y-12">
+                    <div className="space-y-8 sm:space-y-12">
                         {timeline.map((item, index) => {
                             const isWork = item.type === 'work';
                             const isLeft = index % 2 === 0;
@@ -50,7 +50,7 @@ export const ExperienceSection: React.FC = () => {
                                         } flex-col`}
                                 >
                                     {/* Content */}
-                                    <div className="flex-1 md:text-right md:pr-8 md:pl-0 w-full">
+                                    <div className="flex-1 w-full">
                                         <motion.div
                                             whileHover={{ scale: 1.02 }}
                                             className="card-hover"
@@ -80,7 +80,7 @@ export const ExperienceSection: React.FC = () => {
                                                 {isWork ? item.description : `${item.field}`}
                                             </p>
 
-                                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-500 dark:text-gray-400">
                                                 <span>📍 {item.location}</span>
                                                 <span>
                                                     📅 {new Date(item.startDate).toLocaleDateString('en-US', {

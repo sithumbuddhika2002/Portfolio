@@ -40,8 +40,8 @@ export const Navbar: React.FC = () => {
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-                    ? 'glass-strong shadow-lg py-4'
-                    : 'bg-transparent py-6'
+                    ? 'glass-strong shadow-lg py-2 sm:py-4'
+                    : 'bg-transparent py-3 sm:py-6'
                 }`}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -128,7 +128,7 @@ export const Navbar: React.FC = () => {
                         exit={{ opacity: 0, scale: 0.95, y: -20 }}
                         className="md:hidden glass-strong mt-4 mx-4 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
                     >
-                        <div className="px-4 py-8 space-y-6 flex flex-col items-center">
+                        <div className="px-4 py-4 space-y-1 flex flex-col items-center">
                             {navLinks.map((link, index) => (
                                 <motion.a
                                     key={link.name}
@@ -137,7 +137,7 @@ export const Navbar: React.FC = () => {
                                         e.preventDefault();
                                         scrollToSection(link.href);
                                     }}
-                                    className="w-full text-center text-xl font-semibold text-gray-800 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 py-3 rounded-xl hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300"
+                                    className="w-full text-center text-base font-semibold text-gray-800 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 py-2 rounded-xl hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300"
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: index * 0.1 }}

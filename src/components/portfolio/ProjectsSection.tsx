@@ -53,7 +53,7 @@ export const ProjectsSection: React.FC = () => {
                 </motion.div>
 
                 {/* Projects Grid */}
-                <motion.div layout className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <motion.div layout className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
                     {filteredProjects.map((project, index) => (
                         <motion.div
                             key={project.id}
@@ -150,7 +150,7 @@ export const ProjectsSection: React.FC = () => {
                                 animate={{ scale: 1, opacity: 1 }}
                                 exit={{ scale: 0.9, opacity: 0 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8 relative"
+                                className="bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-8 relative"
                             >
                                 <button
                                     onClick={() => setSelectedProject(null)}
@@ -162,15 +162,15 @@ export const ProjectsSection: React.FC = () => {
                                 <img
                                     src={selectedProject.image}
                                     alt={selectedProject.title}
-                                    className="w-full h-64 object-cover rounded-xl mb-6"
+                                    className="w-full h-40 sm:h-64 object-cover rounded-xl mb-4 sm:mb-6"
                                 />
 
-                                <h2 className="text-3xl font-bold mb-4">{selectedProject.title}</h2>
-                                <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg">
+                                <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">{selectedProject.title}</h2>
+                                <p className="text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 text-base sm:text-lg">
                                     {selectedProject.longDescription}
                                 </p>
 
-                                <div className="mb-6">
+                                <div className="mb-4 sm:mb-6">
                                     <h3 className="text-xl font-semibold mb-3">Technologies Used</h3>
                                     <div className="flex flex-wrap gap-2">
                                         {selectedProject.technologies.map((tech, i) => (
@@ -184,7 +184,7 @@ export const ProjectsSection: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4">
+                                <div className="flex flex-wrap gap-3 sm:gap-4">
                                     {selectedProject.liveUrl && (
                                         <a
                                             href={selectedProject.liveUrl}

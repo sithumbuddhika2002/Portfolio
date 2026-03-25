@@ -73,10 +73,10 @@ export const AboutSection: React.FC = () => {
                         className="space-y-6"
                     >
                         <div>
-                            <h3 className="text-3xl font-bold font-display mb-4">
+                            <h3 className="text-2xl sm:text-3xl font-bold font-display mb-4">
                                 {profile.title}
                             </h3>
-                            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+                            <p className="text-base sm:text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
                                 {profile.bio}
                             </p>
                         </div>
@@ -102,12 +102,12 @@ export const AboutSection: React.FC = () => {
                                         {item.href ? (
                                             <a
                                                 href={item.href}
-                                                className="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                                className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors break-all"
                                             >
                                                 {item.value}
                                             </a>
                                         ) : (
-                                            <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                            <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
                                                 {item.value}
                                             </p>
                                         )}

@@ -115,12 +115,12 @@ export const ContactSection: React.FC = () => {
                                             {item.href ? (
                                                 <a
                                                     href={item.href}
-                                                    className="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                                    className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors break-all"
                                                 >
                                                     {item.value}
                                                 </a>
                                             ) : (
-                                                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                                <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
                                                     {item.value}
                                                 </p>
                                             )}

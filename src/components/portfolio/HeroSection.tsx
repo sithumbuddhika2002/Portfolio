@@ -43,8 +43,8 @@ export const HeroSection: React.FC = () => {
             {/* Animated Background */}
             <div className="absolute inset-0 -z-10">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 via-accent-500/20 to-primary-500/20 dark:from-primary-900/30 dark:via-accent-900/30 dark:to-primary-900/30 animate-gradient" />
-                <div className="absolute top-20 left-10 w-72 h-72 bg-primary-500/30 rounded-full filter blur-3xl animate-float" />
-                <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent-500/30 rounded-full filter blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+                <div className="absolute top-20 left-10 w-40 h-40 sm:w-72 sm:h-72 bg-primary-500/30 rounded-full filter blur-3xl animate-float" />
+                <div className="absolute bottom-20 right-10 w-52 h-52 sm:w-96 sm:h-96 bg-accent-500/30 rounded-full filter blur-3xl animate-float" style={{ animationDelay: '2s' }} />
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -64,13 +64,13 @@ export const HeroSection: React.FC = () => {
                             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 font-medium">
                                 Hi, I'm
                             </p>
-                            <h1 className="text-5xl md:text-7xl font-bold font-display mt-2">
+                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-display mt-2">
                                 <span className="gradient-text">{profile.name}</span>
                             </h1>
                         </motion.div>
 
                         <motion.p
-                            className="text-2xl md:text-3xl text-gray-700 dark:text-gray-300 font-semibold"
+                            className="text-xl sm:text-2xl md:text-3xl text-gray-700 dark:text-gray-300 font-semibold"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4 }}
@@ -79,7 +79,7 @@ export const HeroSection: React.FC = () => {
                         </motion.p>
 
                         <motion.p
-                            className="text-lg text-gray-600 dark:text-gray-400 max-w-xl"
+                            className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-xl"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.6 }}
