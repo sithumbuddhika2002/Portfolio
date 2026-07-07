@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import { useToast } from '../../contexts/ToastContext';
+import { compressImage } from '../../utils/fileUtils';
 
 export const ProfileEditor: React.FC = () => {
     const { data, updateSection, loading } = usePortfolioData();
@@ -11,6 +12,7 @@ export const ProfileEditor: React.FC = () => {
         title: p?.title ?? '',
         bio: p?.bio ?? '',
         image: p?.image ?? '',
+        aboutImage: p?.aboutImage ?? '',
         email: p?.email ?? '',
         phone: p?.phone ?? '',
         location: p?.location ?? '',
@@ -19,6 +21,30 @@ export const ProfileEditor: React.FC = () => {
 
     const [profile, setProfile] = useState(getProfileWithDefaults(data.profile));
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingProfile, setIsUploadingProfile] = useState(false);
+    const [isUploadingAbout, setIsUploadingAbout] = useState(false);
+
+    const handleImageUpload = async (
+        e: React.ChangeEvent<HTMLInputElement>,
+        fieldName: 'image' | 'aboutImage'
+    ) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            try {
+                if (fieldName === 'image') setIsUploadingProfile(true);
+                else setIsUploadingAbout(true);
+                const base64 = await compressImage(file);
+                setProfile((prev) => ({ ...prev, [fieldName]: base64 }));
+                showSuccess(`${fieldName === 'image' ? 'Profile' : 'About Me'} image uploaded successfully! 🎉`);
+            } catch (error) {
+                console.error('Failed to convert image:', error);
+                showError('Failed to upload image. Please try a smaller file.');
+            } finally {
+                if (fieldName === 'image') setIsUploadingProfile(false);
+                else setIsUploadingAbout(false);
+            }
+        }
+    };
 
     // Update local state when data loads
     useEffect(() => {
@@ -119,18 +145,95 @@ export const ProfileEditor: React.FC = () => {
                     />
                 </div>
 
-                <div>
-                    <label className="block text-sm font-semibold mb-2">
-                        Profile Image URL
-                    </label>
-                    <input
-                        type="url"
-                        name="image"
-                        value={profile.image}
-                        onChange={handleChange}
-                        className="input-field"
-                        required
-                    />
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-semibold mb-2">
+                            Profile Image
+                        </label>
+                        <div className="space-y-3">
+                            <div className="flex gap-2">
+                                <input
+                                    type="url"
+                                    name="image"
+                                    value={profile.image}
+                                    onChange={handleChange}
+                                    className="input-field flex-1"
+                                    placeholder="Enter URL or upload image"
+                                    required
+                                />
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleImageUpload(e, 'image')}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        disabled={isUploadingProfile}
+                                    />
+                                    <button
+                                        type="button"
+                                        className={`px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
+                                            isUploadingProfile ? 'opacity-50 cursor-not-allowed' : ''
+                                        }`}
+                                    >
+                                        {isUploadingProfile ? 'Uploading...' : 'Upload'}
+                                    </button>
+                                </div>
+                            </div>
+                            {profile.image && (
+                                <div className="relative w-full h-24 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                                    <img
+                                        src={profile.image}
+                                        alt="Profile Preview"
+                                        className="w-full h-full object-contain"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-2">
+                            About Me Image
+                        </label>
+                        <div className="space-y-3">
+                            <div className="flex gap-2">
+                                <input
+                                    type="url"
+                                    name="aboutImage"
+                                    value={profile.aboutImage || ''}
+                                    onChange={handleChange}
+                                    className="input-field flex-1"
+                                    placeholder="Leave empty to use Profile Image"
+                                />
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleImageUpload(e, 'aboutImage')}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        disabled={isUploadingAbout}
+                                    />
+                                    <button
+                                        type="button"
+                                        className={`px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
+                                            isUploadingAbout ? 'opacity-50 cursor-not-allowed' : ''
+                                        }`}
+                                    >
+                                        {isUploadingAbout ? 'Uploading...' : 'Upload'}
+                                    </button>
+                                </div>
+                            </div>
+                            {(profile.aboutImage || profile.image) && (
+                                <div className="relative w-full h-24 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                                    <img
+                                        src={profile.aboutImage || profile.image}
+                                        alt="About Preview"
+                                        className="w-full h-full object-contain"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">

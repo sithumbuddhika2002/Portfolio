@@ -57,7 +57,7 @@ export const AboutSection: React.FC = () => {
                         <div className="relative group">
                             <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl transform group-hover:scale-105 transition-transform duration-300 opacity-20" />
                             <img
-                                src={profile.image}
+                                src={profile.aboutImage || profile.image}
                                 alt={profile.name}
                                 className="relative w-full max-w-md rounded-2xl shadow-2xl object-cover"
                             />

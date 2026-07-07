@@ -14,6 +14,7 @@ export interface Profile {
     title: string;
     bio: string;
     image: string;
+    aboutImage?: string;
     resumeUrl: string;
     location: string;
     email: string;
