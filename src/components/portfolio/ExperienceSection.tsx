@@ -373,7 +373,7 @@ export const ExperienceSection: React.FC = () => {
                                                             <motion.li
                                                                 key={bulletIndex}
                                                                 variants={itemVariants}
-                                                                className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 border border-gray-100/50 dark:border-gray-800/30 transition-all duration-300 text-sm text-gray-700 dark:text-gray-350 leading-relaxed shadow-sm group"
+                                                                className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 border border-gray-100/50 dark:border-gray-800/30 transition-all duration-300 text-sm text-gray-700 dark:text-gray-300 leading-relaxed shadow-sm group"
                                                             >
                                                                 <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-500 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
                                                                     <CheckIcon className="w-4 h-4" />
