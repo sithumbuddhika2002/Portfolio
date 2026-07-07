@@ -10,11 +10,18 @@ export const ProjectsSection: React.FC = () => {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [filter, setFilter] = useState<string>('all');
 
-    const categories = ['all', ...new Set(projects.map((p) => p.category))];
+    const sortedProjects = [...(projects || [])].sort((a, b) => {
+        if (a.featured !== b.featured) {
+            return a.featured ? -1 : 1;
+        }
+        return (b.date || '').localeCompare(a.date || '');
+    });
+
+    const categories = ['all', ...new Set(sortedProjects.map((p) => p.category))];
     const filteredProjects =
         filter === 'all'
-            ? projects
-            : projects.filter((p) => p.category === filter);
+            ? sortedProjects
+            : sortedProjects.filter((p) => p.category === filter);
 
     return (
         <section id="projects" className="section-padding bg-gray-50 dark:bg-gray-900/50">

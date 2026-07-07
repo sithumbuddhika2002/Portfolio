@@ -146,7 +146,14 @@ export const ProjectsEditor: React.FC = () => {
             </motion.div>
 
             <div className="grid lg:grid-cols-2 gap-6">
-                {projects.map((project) => (
+                {[...projects]
+                    .sort((a, b) => {
+                        if (a.featured !== b.featured) {
+                            return a.featured ? -1 : 1;
+                        }
+                        return (b.date || '').localeCompare(a.date || '');
+                    })
+                    .map((project) => (
                     <motion.div key={project.id} layout className="card">
                         <div className="flex items-start gap-4">
                             <img
@@ -360,21 +367,40 @@ export const ProjectsEditor: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4">
-                                <label className="flex items-center gap-2">
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-semibold mb-2">
+                                        Project Date
+                                    </label>
                                     <input
-                                        type="checkbox"
-                                        checked={editingProject.featured}
+                                        type="month"
+                                        value={editingProject.date || ''}
                                         onChange={(e) =>
                                             setEditingProject({
                                                 ...editingProject,
-                                                featured: e.target.checked,
+                                                date: e.target.value,
                                             })
                                         }
-                                        className="w-5 h-5"
+                                        className="input-field"
                                     />
-                                    <span className="font-semibold">Featured Project</span>
-                                </label>
+                                </div>
+
+                                <div className="flex items-center pt-6">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={editingProject.featured}
+                                            onChange={(e) =>
+                                                setEditingProject({
+                                                    ...editingProject,
+                                                    featured: e.target.checked,
+                                                })
+                                            }
+                                            className="w-5 h-5"
+                                        />
+                                        <span className="font-semibold">Featured Project</span>
+                                    </label>
+                                </div>
                             </div>
 
                             <div className="flex gap-3 pt-4">
