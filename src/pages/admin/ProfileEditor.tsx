@@ -34,12 +34,12 @@ export const ProfileEditor: React.FC = () => {
             try {
                 if (fieldName === 'image') setIsUploadingProfile(true);
                 else setIsUploadingAbout(true);
-                const base64 = await compressImage(file);
+                const base64 = await compressImage(file, 300, 0.5);
                 setProfile((prev) => ({ ...prev, [fieldName]: base64 }));
                 showSuccess(`${fieldName === 'image' ? 'Profile' : 'About Me'} image uploaded successfully! 🎉`);
             } catch (error) {
-                console.error('Failed to convert image:', error);
-                showError('Failed to upload image. Please try a smaller file.');
+                console.error('Failed to upload image:', error);
+                showError('Failed to upload image. Please try again.');
             } finally {
                 if (fieldName === 'image') setIsUploadingProfile(false);
                 else setIsUploadingAbout(false);

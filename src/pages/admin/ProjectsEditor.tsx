@@ -90,12 +90,12 @@ export const ProjectsEditor: React.FC = () => {
         if (file && editingProject) {
             try {
                 setIsUploading(true);
-                const base64 = await compressImage(file);
+                const base64 = await compressImage(file, 500, 0.5);
                 setEditingProject({ ...editingProject, image: base64 });
-                showSuccess('Image uploaded successfully!');
+                showSuccess('Image uploaded successfully! 🎉');
             } catch (error) {
-                console.error('Failed to convert image:', error);
-                showError('Failed to upload image. Please try a smaller file.');
+                console.error('Failed to upload image:', error);
+                showError('Failed to upload image. Please try again.');
             } finally {
                 setIsUploading(false);
             }

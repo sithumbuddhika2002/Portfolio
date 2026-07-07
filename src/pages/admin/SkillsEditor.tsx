@@ -4,6 +4,7 @@ import { usePortfolioData } from '../../hooks/usePortfolioData';
 import type { Skill } from '../../types/portfolio';
 import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../../contexts/ToastContext';
+import { convertFileToBase64, compressImage } from '../../utils/fileUtils';
 
 export const SkillsEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
@@ -280,29 +281,37 @@ export const SkillsEditor: React.FC = () => {
                                         )}
                                     </div>
 
-                                    <div className="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-xl border border-dashed border-gray-200 dark:border-gray-600">
-                                        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
-                                            Or Upload Image / SVG File
-                                        </label>
-                                        <input
-                                            type="file"
-                                            accept=".svg, .png, .jpg, .jpeg"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    const reader = new FileReader();
-                                                    reader.onloadend = () => {
-                                                        setModalSkill({
-                                                            ...modalSkill,
-                                                            icon: reader.result as string,
-                                                        });
-                                                    };
-                                                    reader.readAsDataURL(file);
-                                                }
-                                            }}
-                                            className="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-gray-700 dark:file:text-gray-200"
-                                        />
-                                    </div>
+                                     <div className="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-xl border border-dashed border-gray-200 dark:border-gray-600">
+                                         <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                                             Or Upload Image / SVG File
+                                         </label>
+                                         <input
+                                             type="file"
+                                             accept=".svg, .png, .jpg, .jpeg"
+                                             onChange={async (e) => {
+                                                 const file = e.target.files?.[0];
+                                                 if (file) {
+                                                     try {
+                                                         let base64 = '';
+                                                         if (file.type === 'image/svg+xml') {
+                                                             base64 = await convertFileToBase64(file);
+                                                         } else {
+                                                             base64 = await compressImage(file, 64, 0.5);
+                                                         }
+                                                         setModalSkill({
+                                                             ...modalSkill,
+                                                             icon: base64,
+                                                         });
+                                                         showSuccess('Icon processed and compressed successfully! 🎉');
+                                                     } catch (err) {
+                                                         console.error('Failed to process icon:', err);
+                                                         showError('Failed to process icon. Please try again.');
+                                                     }
+                                                 }
+                                             }}
+                                             className="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-gray-700 dark:file:text-gray-200"
+                                         />
+                                     </div>           
                                 </div>
 
                                 <div>
