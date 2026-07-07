@@ -37,6 +37,8 @@ export const ExperienceEditor: React.FC = () => {
             endDate: 'Present',
             location: 'Location',
             type: 'work',
+            skills: [],
+            achievements: [],
         };
         setExperience([...experience, newExp]);
     };
@@ -51,6 +53,8 @@ export const ExperienceEditor: React.FC = () => {
             endDate: 'Present',
             location: 'Location',
             type: 'education',
+            skills: [],
+            achievements: [],
         };
         setEducation([...education, newEdu]);
     };
@@ -148,6 +152,47 @@ export const ExperienceEditor: React.FC = () => {
                                     rows={3}
                                     className="input-field resize-none"
                                 />
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-semibold mb-2">
+                                        Skills Used (comma-separated)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={exp.skills ? exp.skills.join(', ') : ''}
+                                        onChange={(e) => {
+                                            const newExp = [...experience];
+                                            newExp[index] = { 
+                                                ...exp, 
+                                                skills: e.target.value.split(',').map(s => s.trim()).filter(Boolean) 
+                                            };
+                                            setExperience(newExp);
+                                        }}
+                                        placeholder="e.g. React, TypeScript, Node.js"
+                                        className="input-field"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-2">
+                                        Key Achievements (one per line)
+                                    </label>
+                                    <textarea
+                                        value={exp.achievements ? exp.achievements.join('\n') : ''}
+                                        onChange={(e) => {
+                                            const newExp = [...experience];
+                                            newExp[index] = { 
+                                                ...exp, 
+                                                achievements: e.target.value.split('\n').map(a => a.trim()).filter(Boolean) 
+                                            };
+                                            setExperience(newExp);
+                                        }}
+                                        placeholder="e.g. Led development of X...&#10;Improved API performance by 40%..."
+                                        rows={3}
+                                        className="input-field resize-none"
+                                    />
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -274,6 +319,47 @@ export const ExperienceEditor: React.FC = () => {
                                     }}
                                     className="input-field"
                                 />
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-semibold mb-2">
+                                        Skills Acquired (comma-separated)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={edu.skills ? edu.skills.join(', ') : ''}
+                                        onChange={(e) => {
+                                            const newEdu = [...education];
+                                            newEdu[index] = { 
+                                                ...edu, 
+                                                skills: e.target.value.split(',').map(s => s.trim()).filter(Boolean) 
+                                            };
+                                            setEducation(newEdu);
+                                        }}
+                                        placeholder="e.g. Python, Data Structures, Algorithms"
+                                        className="input-field"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-2">
+                                        Key Achievements / Coursework (one per line)
+                                    </label>
+                                    <textarea
+                                        value={edu.achievements ? edu.achievements.join('\n') : ''}
+                                        onChange={(e) => {
+                                            const newEdu = [...education];
+                                            newEdu[index] = { 
+                                                ...edu, 
+                                                achievements: e.target.value.split('\n').map(a => a.trim()).filter(Boolean) 
+                                            };
+                                            setEducation(newEdu);
+                                        }}
+                                        placeholder="e.g. Graduated Magna Cum Laude...&#10;TA for Intro to Computer Science..."
+                                        rows={3}
+                                        className="input-field resize-none"
+                                    />
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

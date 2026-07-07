@@ -52,6 +52,8 @@ export interface Experience {
     endDate: string | 'Present';
     location: string;
     type: 'work';
+    skills?: string[];
+    achievements?: string[];
 }
 
 export interface Education {
@@ -63,6 +65,8 @@ export interface Education {
     endDate: string | 'Present';
     location: string;
     type: 'education';
+    skills?: string[];
+    achievements?: string[];
 }
 
 export interface ContactInfo {

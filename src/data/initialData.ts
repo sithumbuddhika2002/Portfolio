@@ -73,6 +73,13 @@ export const initialData: PortfolioData = {
             endDate: 'Present',
             location: 'San Francisco, CA',
             type: 'work',
+            skills: ['React', 'TypeScript', 'Node.js', 'AWS', 'GraphQL', 'Docker'],
+            achievements: [
+                'Architected and implemented a micro-frontend architecture, increasing deployment frequency by 300%.',
+                'Mentored 6 junior/mid-level developers, promoting a culture of clean code and automated testing.',
+                'Designed and developed real-time dashboard analytics that processes 10M+ events daily with <100ms response times.',
+                'Reduced AWS infrastructure costs by 22% through container optimization and smart auto-scaling rules.'
+            ]
         },
         {
             id: '2',
@@ -83,6 +90,13 @@ export const initialData: PortfolioData = {
             endDate: '2021-12',
             location: 'Remote',
             type: 'work',
+            skills: ['React', 'Redux', 'Node.js', 'Express', 'MongoDB', 'Tailwind CSS'],
+            achievements: [
+                'Successfully migrated a legacy MPA codebase to a modern React SPA, improving Lighthouse scores by 35 points.',
+                'Built a secure, JWT-based OAuth2 authentication gateway with single sign-on (SSO) support.',
+                'Refactored database query logic and implemented Redis caching, reducing API latency by 40%.',
+                'Collaborated closely with UX designers to develop a reusable design system of 40+ accessible UI components.'
+            ]
         },
     ],
     education: [
@@ -95,6 +109,13 @@ export const initialData: PortfolioData = {
             endDate: '2020-05',
             location: 'California, USA',
             type: 'education',
+            skills: ['Python', 'Java', 'Data Structures', 'Algorithms', 'Software Engineering'],
+            achievements: [
+                'Graduated Magna Cum Laude with a cumulative GPA of 3.85/4.0.',
+                'Completed senior capstone project: An AI-powered study companion app used by 500+ campus students.',
+                'Selected as a Teaching Assistant for Intro to Algorithms; held weekly recitation sessions for 35+ students.',
+                'Active member of the ACM student chapter and participant in regional hackathons.'
+            ]
         },
     ],
     contact: {
