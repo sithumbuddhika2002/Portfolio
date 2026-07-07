@@ -11,6 +11,7 @@ export const ProfileEditor: React.FC = () => {
         name: p?.name ?? '',
         title: p?.title ?? '',
         bio: p?.bio ?? '',
+        aboutMe: p?.aboutMe ?? '',
         image: p?.image ?? '',
         aboutImage: p?.aboutImage ?? '',
         email: p?.email ?? '',
@@ -134,14 +135,26 @@ export const ProfileEditor: React.FC = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold mb-2">Bio</label>
+                    <label className="block text-sm font-semibold mb-2">Bio (Hero Section Tagline)</label>
                     <textarea
                         name="bio"
                         value={profile.bio}
                         onChange={handleChange}
-                        rows={4}
+                        rows={3}
                         className="input-field resize-none"
                         required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-semibold mb-2">About Me Description</label>
+                    <textarea
+                        name="aboutMe"
+                        value={profile.aboutMe}
+                        onChange={handleChange}
+                        rows={5}
+                        className="input-field resize-none"
+                        placeholder="Detailed professional bio shown in the About Me section"
                     />
                 </div>
 

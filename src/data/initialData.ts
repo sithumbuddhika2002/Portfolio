@@ -5,6 +5,7 @@ export const initialData: PortfolioData = {
         name: 'Your Name',
         title: 'Full Stack Developer & Designer',
         bio: 'Passionate developer with expertise in creating beautiful, functional web applications. I love turning ideas into reality through clean code and stunning design.',
+        aboutMe: 'I am a dedicated software engineer with a deep passion for building robust, user-centric web applications. Over the years, I have worked across the full stack, mastering modern frontend frameworks like React and TypeScript, as well as scalable backend architectures. My focus is on creating clean, performant, and accessible interfaces that provide exceptional user experiences while solving complex technical problems.',
         image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
         resumeUrl: '#',
         location: 'San Francisco, CA',
