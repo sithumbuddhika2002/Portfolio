@@ -114,7 +114,7 @@ export const ExperienceSection: React.FC = () => {
 
                 {/* Filter Tabs */}
                 <div className="flex justify-center mb-12">
-                    <div className="inline-flex rounded-xl bg-gray-100 dark:bg-gray-905 p-1.5 border border-gray-200/50 dark:border-gray-800/50 backdrop-blur-md">
+                    <div className="inline-flex rounded-xl bg-gray-100 dark:bg-gray-900 p-1.5 border border-gray-200/50 dark:border-gray-800/50 backdrop-blur-md">
                         {(['all', 'work', 'education'] as const).map((tab) => (
                             <button
                                 key={tab}
@@ -222,7 +222,7 @@ export const ExperienceSection: React.FC = () => {
                                                 onClick={() => setActiveIndex(index)}
                                                 className={`w-full text-left p-4 rounded-xl border transition-all duration-300 cursor-pointer ${
                                                     isActive
-                                                        ? 'bg-white dark:bg-gray-905 border-primary-500/30 shadow-lg ring-1 ring-primary-500/10 translate-x-1'
+                                                        ? 'bg-white dark:bg-gray-900 border-primary-500/30 shadow-lg ring-1 ring-primary-500/10 translate-x-1'
                                                         : 'bg-transparent border-transparent hover:bg-gray-100/50 dark:hover:bg-gray-900/30'
                                                 }`}
                                             >
@@ -263,7 +263,7 @@ export const ExperienceSection: React.FC = () => {
                                             dragConstraints={{ left: 0, right: 0 }}
                                             dragElastic={0.25}
                                             onDragEnd={handleDragEnd}
-                                            className="card shadow-2xl p-6 md:p-8 bg-white dark:bg-gray-905 border border-gray-200 dark:border-gray-800 touch-pan-y cursor-grab active:cursor-grabbing select-none"
+                                            className="card shadow-2xl p-6 md:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 touch-pan-y cursor-grab active:cursor-grabbing select-none"
                                         >
                                             {/* Story Progress Indicators (Instagram-style) */}
                                             <div className="flex gap-1.5 w-full mb-6">
@@ -337,11 +337,11 @@ export const ExperienceSection: React.FC = () => {
 
                                             {/* Metadata Pills */}
                                             <div className="flex flex-wrap gap-2.5 mb-6">
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-805 border border-gray-200/50 dark:border-gray-700/50 text-xs font-bold text-gray-600 dark:text-gray-400 shadow-sm">
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50 text-xs font-bold text-gray-600 dark:text-gray-400 shadow-sm">
                                                     <MapPinIcon className="w-3.5 h-3.5 text-primary-500" />
                                                     {item.location}
                                                 </span>
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-805 border border-gray-200/50 dark:border-gray-700/50 text-xs font-bold text-gray-600 dark:text-gray-400 shadow-sm">
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50 text-xs font-bold text-gray-600 dark:text-gray-400 shadow-sm">
                                                     <CalendarIcon className="w-3.5 h-3.5 text-accent-500" />
                                                     {new Date(item.startDate).toLocaleDateString('en-US', {
                                                         year: 'numeric',
