@@ -87,7 +87,7 @@ export interface SocialLinks {
 }
 
 export interface CloudinaryConfig {
-    cloudName: string;
+    cloudName?: string;
     uploadPreset?: string;
     apiKey?: string;
     apiSecret?: string;

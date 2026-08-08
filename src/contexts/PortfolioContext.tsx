@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { PortfolioData } from '../types/portfolio';
 import { firebaseStorage } from '../services/firebaseStorage';
-import { compressAllPortfolioData } from '../utils/fileUtils';
 
 interface PortfolioContextType {
     data: PortfolioData;
