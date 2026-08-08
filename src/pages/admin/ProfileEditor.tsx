@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import { useToast } from '../../contexts/ToastContext';
-import { compressImage } from '../../utils/fileUtils';
+import { uploadImageSmart } from '../../utils/fileUtils';
 
 export const ProfileEditor: React.FC = () => {
     const { data, updateSection, loading } = usePortfolioData();
@@ -34,9 +34,10 @@ export const ProfileEditor: React.FC = () => {
             try {
                 if (fieldName === 'image') setIsUploadingProfile(true);
                 else setIsUploadingAbout(true);
-                const base64 = await compressImage(file, 300, 0.5);
-                setProfile((prev) => ({ ...prev, [fieldName]: base64 }));
-                showSuccess(`${fieldName === 'image' ? 'Profile' : 'About Me'} image uploaded successfully! 🎉`);
+                const { url, source } = await uploadImageSmart(file, data.settings, { maxWidth: 1600, quality: 0.88 });
+                setProfile((prev) => ({ ...prev, [fieldName]: url }));
+                const badge = source === 'cloudinary' ? 'Cloudinary ☁️' : 'HD Crisp 🖼️';
+                showSuccess(`${fieldName === 'image' ? 'Profile' : 'About Me'} image uploaded via ${badge}! 🎉`);
             } catch (error) {
                 console.error('Failed to upload image:', error);
                 showError('Failed to upload image. Please try again.');

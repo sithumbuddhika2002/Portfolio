@@ -1,4 +1,5 @@
-import type { PortfolioData } from '../types/portfolio';
+import type { PortfolioData, Settings } from '../types/portfolio';
+import { isCloudinaryConfigured, uploadToCloudinary } from '../services/cloudinaryService';
 
 export const convertFileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -9,8 +10,21 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
     });
 };
 
-export const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.7): Promise<string> => {
+/**
+ * High-quality image compressor for crisp local fallback display.
+ * Default max width 1600px, quality 0.88, with high-quality canvas smoothing.
+ */
+export const compressImage = (
+    file: File,
+    maxWidth: number = 1600,
+    quality: number = 0.88
+): Promise<string> => {
     return new Promise((resolve, reject) => {
+        if (file.type === 'image/svg+xml') {
+            convertFileToBase64(file).then(resolve).catch(reject);
+            return;
+        }
+
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = (event) => {
@@ -21,8 +35,9 @@ export const compressImage = (file: File, maxWidth: number = 800, quality: numbe
                 let width = img.width;
                 let height = img.height;
 
+                // Only downscale if larger than maxWidth
                 if (width > maxWidth) {
-                    height = (height * maxWidth) / width;
+                    height = Math.round((height * maxWidth) / width);
                     width = maxWidth;
                 }
 
@@ -35,8 +50,21 @@ export const compressImage = (file: File, maxWidth: number = 800, quality: numbe
                     return;
                 }
 
+                // Enable high quality image smoothing for crisp resizing
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
                 ctx.drawImage(img, 0, 0, width, height);
-                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+
+                // Preserve PNG for transparent images or convert to WebP / high-quality JPEG
+                let mimeType = 'image/jpeg';
+                if (file.type === 'image/png') {
+                    mimeType = 'image/png';
+                } else if (file.type === 'image/webp') {
+                    mimeType = 'image/webp';
+                }
+
+                const compressedBase64 = canvas.toDataURL(mimeType, quality);
                 resolve(compressedBase64);
             };
             img.onerror = (error) => reject(error);
@@ -45,14 +73,34 @@ export const compressImage = (file: File, maxWidth: number = 800, quality: numbe
     });
 };
 
-export const compressBase64 = (base64Str: string, maxWidth: number, quality: number): Promise<string> => {
-    if (!base64Str || !base64Str.startsWith('data:image')) {
+export const compressBase64 = (
+    base64Str: string,
+    maxWidth: number = 1600,
+    quality: number = 0.88
+): Promise<string> => {
+    if (!base64Str || typeof base64Str !== 'string') {
+        return Promise.resolve(base64Str || '');
+    }
+
+    // Do not compress external HTTP/HTTPS URLs
+    if (base64Str.startsWith('http://') || base64Str.startsWith('https://')) {
         return Promise.resolve(base64Str);
     }
-    // SVGs are vector graphic code and do not need visual canvas compression
+
+    if (!base64Str.startsWith('data:image')) {
+        return Promise.resolve(base64Str);
+    }
+
+    // SVGs do not need visual canvas compression
     if (base64Str.includes('image/svg+xml')) {
         return Promise.resolve(base64Str);
     }
+
+    // If base64 string is reasonable size (< 500KB), preserve as is to prevent quality loss
+    if (base64Str.length < 700000) {
+        return Promise.resolve(base64Str);
+    }
+
     return new Promise((resolve) => {
         const img = new Image();
         img.src = base64Str;
@@ -62,7 +110,7 @@ export const compressBase64 = (base64Str: string, maxWidth: number, quality: num
             let height = img.height;
 
             if (width > maxWidth) {
-                height = (height * maxWidth) / width;
+                height = Math.round((height * maxWidth) / width);
                 width = maxWidth;
             }
 
@@ -71,8 +119,11 @@ export const compressBase64 = (base64Str: string, maxWidth: number, quality: num
 
             const ctx = canvas.getContext('2d');
             if (ctx) {
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', quality));
+                const isPng = base64Str.includes('image/png');
+                resolve(canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', quality));
             } else {
                 resolve(base64Str);
             }
@@ -81,38 +132,34 @@ export const compressBase64 = (base64Str: string, maxWidth: number, quality: num
     });
 };
 
+/**
+ * Ensures portfolio data is preserved exactly as stored.
+ */
 export const compressAllPortfolioData = async (data: PortfolioData): Promise<PortfolioData> => {
-    const copy = JSON.parse(JSON.stringify(data)) as PortfolioData;
+    return Promise.resolve(data);
+};
 
-    // 1. Profile images (max 300px, quality 0.5)
-    if (copy.profile) {
-        if (copy.profile.image) {
-            copy.profile.image = await compressBase64(copy.profile.image, 300, 0.5);
-        }
-        if (copy.profile.aboutImage) {
-            copy.profile.aboutImage = await compressBase64(copy.profile.aboutImage, 300, 0.5);
-        }
-    }
-
-    // 2. Skills icons (max 64px, quality 0.5)
-    if (copy.skills && Array.isArray(copy.skills)) {
-        for (let i = 0; i < copy.skills.length; i++) {
-            const skill = copy.skills[i];
-            if (skill.icon) {
-                skill.icon = await compressBase64(skill.icon, 64, 0.5);
-            }
-        }
-    }
-
-    // 3. Projects images (max 500px, quality 0.5)
-    if (copy.projects && Array.isArray(copy.projects)) {
-        for (let i = 0; i < copy.projects.length; i++) {
-            const project = copy.projects[i];
-            if (project.image) {
-                project.image = await compressBase64(project.image, 500, 0.5);
-            }
+/**
+ * Smart upload function:
+ * Uses Cloudinary if configured, otherwise falls back to crisp local compression.
+ */
+export const uploadImageSmart = async (
+    file: File,
+    settings?: Settings,
+    options?: { maxWidth?: number; quality?: number }
+): Promise<{ url: string; source: 'cloudinary' | 'local' }> => {
+    if (isCloudinaryConfigured(settings)) {
+        try {
+            const cloudinaryUrl = await uploadToCloudinary(file, settings);
+            return { url: cloudinaryUrl, source: 'cloudinary' };
+        } catch (error) {
+            console.warn('Cloudinary upload failed, falling back to crisp local upload:', error);
         }
     }
 
-    return copy;
+    // High quality local fallback
+    const maxWidth = options?.maxWidth ?? 1600;
+    const quality = options?.quality ?? 0.88;
+    const localBase64 = await compressImage(file, maxWidth, quality);
+    return { url: localBase64, source: 'local' };
 };

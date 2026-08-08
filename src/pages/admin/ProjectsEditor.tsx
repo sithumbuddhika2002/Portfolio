@@ -4,7 +4,7 @@ import { usePortfolioData } from '../../hooks/usePortfolioData';
 import type { Project } from '../../types/portfolio';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../../contexts/ToastContext';
-import { compressImage } from '../../utils/fileUtils';
+import { uploadImageSmart } from '../../utils/fileUtils';
 
 export const ProjectsEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
@@ -90,9 +90,10 @@ export const ProjectsEditor: React.FC = () => {
         if (file && editingProject) {
             try {
                 setIsUploading(true);
-                const base64 = await compressImage(file, 500, 0.5);
-                setEditingProject({ ...editingProject, image: base64 });
-                showSuccess('Image uploaded successfully! 🎉');
+                const { url, source } = await uploadImageSmart(file, data.settings, { maxWidth: 1600, quality: 0.88 });
+                setEditingProject({ ...editingProject, image: url });
+                const badge = source === 'cloudinary' ? 'Cloudinary ☁️' : 'HD Crisp 🖼️';
+                showSuccess(`Project image uploaded via ${badge}! 🎉`);
             } catch (error) {
                 console.error('Failed to upload image:', error);
                 showError('Failed to upload image. Please try again.');

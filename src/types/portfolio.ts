@@ -86,6 +86,13 @@ export interface SocialLinks {
     behance?: string;
 }
 
+export interface CloudinaryConfig {
+    cloudName: string;
+    uploadPreset?: string;
+    apiKey?: string;
+    apiSecret?: string;
+}
+
 export interface Settings {
     siteTitle: string;
     tagline: string;
@@ -95,6 +102,7 @@ export interface Settings {
         password: string;
     };
     season: 'none' | 'christmas' | 'newyear';
+    cloudinary?: CloudinaryConfig;
 }
 
 // Auth Types
