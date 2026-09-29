@@ -6,6 +6,8 @@ import { firebaseStorage } from '../../services/firebaseStorage';
 import { useToast } from '../../contexts/ToastContext';
 
 
+import { isCloudinaryConfigured, testCloudinaryConfig } from '../../services/cloudinaryService';
+
 export const SettingsEditor: React.FC = () => {
     const { data, updateSection, refresh } = usePortfolioData();
     const { showSuccess, showError } = useToast();
@@ -18,6 +20,29 @@ export const SettingsEditor: React.FC = () => {
     });
     const [isSavingSettings, setIsSavingSettings] = useState(false);
     const [isUpdatingCredentials, setIsUpdatingCredentials] = useState(false);
+    const [isTestingCloudinary, setIsTestingCloudinary] = useState(false);
+
+    const handleTestCloudinary = async () => {
+        const cloudName = settings.cloudinary?.cloudName || 'il2hd5tl';
+        const uploadPreset = settings.cloudinary?.uploadPreset || '';
+        const apiKey = settings.cloudinary?.apiKey || '399392719424744';
+        const apiSecret = settings.cloudinary?.apiSecret || 'ehqNtsQ6S22z5NusmjM6rOorGp4';
+
+        if (!cloudName.trim()) {
+            showError('Please enter Cloud Name first.');
+            return;
+        }
+        setIsTestingCloudinary(true);
+        try {
+            await testCloudinaryConfig(cloudName, uploadPreset, apiKey, apiSecret);
+            showSuccess('Cloudinary connection verified successfully! ☁️🎉');
+        } catch (err: any) {
+            console.error('Cloudinary Test Error:', err);
+            showError(`Cloudinary Test Failed: ${err.message || 'Check your keys.'}`);
+        } finally {
+            setIsTestingCloudinary(false);
+        }
+    };
 
     const handleSaveSettings = async () => {
         setIsSavingSettings(true);
@@ -240,6 +265,125 @@ export const SettingsEditor: React.FC = () => {
                                 />
                             </div>
                         ))}
+
+                        <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-xl font-bold flex items-center gap-2">
+                                    Cloudinary Image Hosting (Optional) ☁️
+                                </h3>
+                                {isCloudinaryConfigured(settings) ? (
+                                    <span className="px-2.5 py-1 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 rounded-full border border-green-200 dark:border-green-800">
+                                        Cloudinary Active ✅
+                                    </span>
+                                ) : (
+                                    <span className="px-2.5 py-1 text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-800">
+                                        HD Local Fallback Active 🖼️
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                                Connect your free Cloudinary account to store full-resolution HD images on CDN and keep Firebase database lightweight.
+                            </p>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Cloud Name</label>
+                                    <input
+                                        type="text"
+                                        value={settings.cloudinary?.cloudName ?? 'il2hd5tl'}
+                                        onChange={(e) =>
+                                            setSettings({
+                                                ...settings,
+                                                cloudinary: {
+                                                    ...(settings.cloudinary || {}),
+                                                    cloudName: e.target.value,
+                                                },
+                                            })
+                                        }
+                                        className="input-field"
+                                        placeholder="il2hd5tl"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">API Key</label>
+                                    <input
+                                        type="text"
+                                        value={settings.cloudinary?.apiKey ?? '399392719424744'}
+                                        onChange={(e) =>
+                                            setSettings({
+                                                ...settings,
+                                                cloudinary: {
+                                                    ...(settings.cloudinary || {}),
+                                                    apiKey: e.target.value,
+                                                },
+                                            })
+                                        }
+                                        className="input-field"
+                                        placeholder="399392719424744"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">API Secret</label>
+                                    <input
+                                        type="password"
+                                        value={settings.cloudinary?.apiSecret ?? 'ehqNtsQ6S22z5NusmjM6rOorGp4'}
+                                        onChange={(e) =>
+                                            setSettings({
+                                                ...settings,
+                                                cloudinary: {
+                                                    ...(settings.cloudinary || {}),
+                                                    apiSecret: e.target.value,
+                                                },
+                                            })
+                                        }
+                                        className="input-field"
+                                        placeholder="••••••••••••••••"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Upload Preset (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={settings.cloudinary?.uploadPreset || ''}
+                                        onChange={(e) =>
+                                            setSettings({
+                                                ...settings,
+                                                cloudinary: {
+                                                    ...(settings.cloudinary || {}),
+                                                    uploadPreset: e.target.value,
+                                                },
+                                            })
+                                        }
+                                        className="input-field"
+                                        placeholder="Unsigned preset name (if not using API Secret)"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-3 mt-4 items-center justify-between bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    <strong>Quick Setup:</strong> Cloudinary Console ➔ Settings ➔ Upload ➔ Add Unsigned Upload Preset.
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleTestCloudinary}
+                                    disabled={isTestingCloudinary}
+                                    className="px-3 py-1.5 text-xs font-semibold bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    {isTestingCloudinary ? (
+                                        <>
+                                            <div className="w-3.5 h-3.5 border-2 border-primary-600/30 border-t-primary-600 rounded-full animate-spin" />
+                                            Testing...
+                                        </>
+                                    ) : (
+                                        'Test Connection 🧪'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
 
                         <motion.button
                             onClick={handleSaveSettings}

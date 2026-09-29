@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { PortfolioData } from '../types/portfolio';
 import { firebaseStorage } from '../services/firebaseStorage';
-import { compressAllPortfolioData } from '../utils/fileUtils';
 
 interface PortfolioContextType {
     data: PortfolioData;
@@ -23,18 +22,16 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const initializeData = async () => {
             setLoading(true);
             const initialData = await firebaseStorage.getData();
-            const compressed = await compressAllPortfolioData(initialData);
-            setData(compressed);
+            setData(initialData);
             setLoading(false);
         };
 
         initializeData();
 
         // Subscribe to real-time changes
-        const unsubscribe = firebaseStorage.subscribeToChanges(async (updatedData) => {
+        const unsubscribe = firebaseStorage.subscribeToChanges((updatedData) => {
             console.log('🔄 Real-time update received from Firestore');
-            const compressed = await compressAllPortfolioData(updatedData);
-            setData(compressed);
+            setData(updatedData);
         });
 
         return () => unsubscribe();

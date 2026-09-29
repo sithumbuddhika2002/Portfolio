@@ -144,5 +144,10 @@ export const initialData: PortfolioData = {
             password: 'Sithum0213',
         },
         season: 'christmas',
+        cloudinary: {
+            cloudName: 'il2hd5tl',
+            apiKey: '399392719424744',
+            apiSecret: 'ehqNtsQ6S22z5NusmjM6rOorGp4',
+        },
     },
 };
