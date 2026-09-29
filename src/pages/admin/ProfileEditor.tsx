@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import { useToast } from '../../contexts/ToastContext';
 import { compressImage } from '../../utils/fileUtils';
@@ -10,6 +11,7 @@ export const ProfileEditor: React.FC = () => {
     const getProfileWithDefaults = (p: typeof data.profile) => ({
         name: p?.name ?? '',
         title: p?.title ?? '',
+        titles: p?.titles && p.titles.length > 0 ? p.titles : (p?.title ? [p.title] : []),
         bio: p?.bio ?? '',
         aboutMe: p?.aboutMe ?? '',
         image: p?.image ?? '',
@@ -21,9 +23,41 @@ export const ProfileEditor: React.FC = () => {
     });
 
     const [profile, setProfile] = useState(getProfileWithDefaults(data.profile));
+    const [newTitleInput, setNewTitleInput] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isUploadingProfile, setIsUploadingProfile] = useState(false);
     const [isUploadingAbout, setIsUploadingAbout] = useState(false);
+
+    const handleAddTitle = () => {
+        if (!newTitleInput.trim()) return;
+        const currentTitles = profile.titles || [];
+        const updated = [...currentTitles, newTitleInput.trim()];
+        setProfile((prev) => ({
+            ...prev,
+            titles: updated,
+            title: prev.title || updated[0] || '',
+        }));
+        setNewTitleInput('');
+    };
+
+    const handleRemoveTitle = (indexToRemove: number) => {
+        const updated = (profile.titles || []).filter((_, i) => i !== indexToRemove);
+        setProfile((prev) => ({
+            ...prev,
+            titles: updated,
+            title: updated[0] || prev.title,
+        }));
+    };
+
+    const handleTitleChange = (index: number, value: string) => {
+        const updated = [...(profile.titles || [])];
+        updated[index] = value;
+        setProfile((prev) => ({
+            ...prev,
+            titles: updated,
+            title: index === 0 ? value : prev.title,
+        }));
+    };
 
     const handleImageUpload = async (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -122,7 +156,7 @@ export const ProfileEditor: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Title</label>
+                        <label className="block text-sm font-semibold mb-2">Primary Title</label>
                         <input
                             type="text"
                             name="title"
@@ -131,6 +165,72 @@ export const ProfileEditor: React.FC = () => {
                             className="input-field"
                             required
                         />
+                    </div>
+                </div>
+
+                {/* Multiple Hero Titles (Animated with TextRoll) */}
+                <div className="p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/40 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <span>Rotating Hero Titles</span>
+                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary-500/10 text-primary-600 dark:text-primary-400 font-medium border border-primary-500/20">
+                                    TextRoll Animation
+                                </span>
+                            </h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                These titles cycle smoothly in the Hero section using the 3D TextRoll cylinder flip animation.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Titles List */}
+                    <div className="space-y-2.5">
+                        {(profile.titles || []).map((t, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                                <span className="text-xs font-mono text-gray-400 w-5 text-right">{idx + 1}.</span>
+                                <input
+                                    type="text"
+                                    value={t}
+                                    onChange={(e) => handleTitleChange(idx, e.target.value)}
+                                    className="input-field py-2 text-sm flex-1"
+                                    placeholder="e.g. Full Stack Developer & Designer"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveTitle(idx)}
+                                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
+                                    title="Delete title"
+                                >
+                                    <TrashIcon className="w-5 h-5" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Add Title Input */}
+                    <div className="flex gap-2 pt-1">
+                        <input
+                            type="text"
+                            value={newTitleInput}
+                            onChange={(e) => setNewTitleInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddTitle();
+                                }
+                            }}
+                            placeholder="Add another rotating title..."
+                            className="input-field py-2 text-sm flex-1"
+                        />
+                        <button
+                            type="button"
+                            onClick={handleAddTitle}
+                            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 active:scale-95 text-white rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 shadow-sm"
+                        >
+                            <PlusIcon className="w-4 h-4" />
+                            <span>Add Title</span>
+                        </button>
                     </div>
                 </div>
 

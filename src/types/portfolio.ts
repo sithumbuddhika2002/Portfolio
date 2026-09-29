@@ -12,6 +12,7 @@ export interface PortfolioData {
 export interface Profile {
     name: string;
     title: string;
+    titles?: string[];
     bio: string;
     aboutMe?: string;
     image: string;
