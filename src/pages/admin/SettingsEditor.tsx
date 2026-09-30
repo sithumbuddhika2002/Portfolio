@@ -116,26 +116,48 @@ export const SettingsEditor: React.FC = () => {
     };
 
     return (
-        <div>
+        <div className="w-full pb-10">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8"
+                className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center justify-between"
             >
-                <h1 className="text-2xl sm:text-3xl font-bold font-display mb-2">Settings</h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                    Configure your portfolio and account settings
-                </p>
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display mb-2">Settings</h1>
+                    <p className="text-gray-600 dark:text-gray-400">
+                        Configure your portfolio, account credentials, and system settings
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <motion.button
+                        onClick={handleSaveSettings}
+                        className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2 cursor-pointer"
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        disabled={isSavingSettings}
+                    >
+                        {isSavingSettings ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            'Save Settings'
+                        )}
+                    </motion.button>
+                </div>
             </motion.div>
 
-            <div className="space-y-8">
+            <div className="space-y-8 w-full">
                 {/* Site Settings */}
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card max-w-3xl">
-                    <h2 className="text-2xl font-bold mb-6">Site Settings</h2>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card w-full space-y-6">
+                    <h2 className="text-xl font-bold font-display pb-2 border-b border-gray-100 dark:border-gray-800 text-gray-900 dark:text-gray-100">
+                        General Site Settings
+                    </h2>
 
-                    <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-semibold mb-2">
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                                 Site Title
                             </label>
                             <input
@@ -149,7 +171,7 @@ export const SettingsEditor: React.FC = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold mb-2">Tagline</label>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Tagline</label>
                             <input
                                 type="text"
                                 value={settings.tagline}
@@ -159,9 +181,11 @@ export const SettingsEditor: React.FC = () => {
                                 className="input-field"
                             />
                         </div>
+                    </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-semibold mb-2">
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                                 Meta Description
                             </label>
                             <textarea
@@ -175,7 +199,7 @@ export const SettingsEditor: React.FC = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold mb-2">
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                                 Seasonal Theme
                             </label>
                             <select
@@ -186,21 +210,25 @@ export const SettingsEditor: React.FC = () => {
                                         season: e.target.value as 'none' | 'christmas' | 'newyear',
                                     })
                                 }
-                                className="input-field"
+                                className="input-field cursor-pointer"
                             >
                                 <option value="none">None</option>
                                 <option value="christmas">Christmas (Snow)</option>
                                 <option value="newyear">New Year (Fireworks)</option>
                             </select>
-                            <p className="text-xs text-gray-500 mt-1">
-                                Enable global animations for specific holidays.
+                            <p className="text-xs text-gray-500 mt-2">
+                                Enable festive interactive animations for specific holidays.
                             </p>
                         </div>
+                    </div>
 
-                        <h3 className="text-xl font-bold mt-8 mb-4">Contact Information</h3>
+                    <h3 className="text-lg font-bold font-display pt-4 pb-2 border-b border-gray-100 dark:border-gray-800 text-gray-900 dark:text-gray-100">
+                        Contact Information
+                    </h3>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div>
-                            <label className="block text-sm font-semibold mb-2">
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                                 Email Address
                             </label>
                             <input
@@ -215,7 +243,7 @@ export const SettingsEditor: React.FC = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold mb-2">
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                                 Phone Number
                             </label>
                             <input
@@ -229,8 +257,8 @@ export const SettingsEditor: React.FC = () => {
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold mb-2">
+                        <div className="sm:col-span-2 lg:col-span-1">
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                                 Location
                             </label>
                             <input
@@ -243,12 +271,16 @@ export const SettingsEditor: React.FC = () => {
                                 placeholder="City, Country"
                             />
                         </div>
+                    </div>
 
-                        <h3 className="text-xl font-bold mt-8 mb-4">Social Links</h3>
+                    <h3 className="text-lg font-bold font-display pt-4 pb-2 border-b border-gray-100 dark:border-gray-800 text-gray-900 dark:text-gray-100">
+                        Social Profile Links
+                    </h3>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {Object.entries(contact.social).map(([platform, url]) => (
                             <div key={platform}>
-                                <label className="block text-sm font-semibold mb-2 capitalize">
+                                <label className="block text-sm font-semibold mb-1.5 capitalize text-gray-700 dark:text-gray-300">
                                     {platform}
                                 </label>
                                 <input
@@ -260,134 +292,136 @@ export const SettingsEditor: React.FC = () => {
                                             social: { ...contact.social, [platform]: e.target.value },
                                         })
                                     }
-                                    className="input-field"
-                                    placeholder={`https://${platform}.com/yourprofile`}
+                                    className="input-field text-sm"
+                                    placeholder={`https://${platform}.com/...`}
                                 />
                             </div>
                         ))}
+                    </div>
 
-                        <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-xl font-bold flex items-center gap-2">
-                                    Cloudinary Image Hosting (Optional) ☁️
-                                </h3>
-                                {isCloudinaryConfigured(settings) ? (
-                                    <span className="px-2.5 py-1 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 rounded-full border border-green-200 dark:border-green-800">
-                                        Cloudinary Active ✅
-                                    </span>
-                                ) : (
-                                    <span className="px-2.5 py-1 text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-800">
-                                        HD Local Fallback Active 🖼️
-                                    </span>
-                                )}
-                            </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
-                                Connect your free Cloudinary account to store full-resolution HD images on CDN and keep Firebase database lightweight.
-                            </p>
+                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                            <h3 className="text-lg font-bold flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                Cloudinary Image Hosting (Optional) ☁️
+                            </h3>
+                            {isCloudinaryConfigured(settings) ? (
+                                <span className="self-start sm:self-auto px-2.5 py-1 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 rounded-full border border-green-200 dark:border-green-800">
+                                    Cloudinary Active ✅
+                                </span>
+                            ) : (
+                                <span className="self-start sm:self-auto px-2.5 py-1 text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-800">
+                                    HD Local Fallback Active 🖼️
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                            Connect your free Cloudinary account to store full-resolution HD images on CDN and keep Firebase database lightweight.
+                        </p>
 
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1">Cloud Name</label>
-                                    <input
-                                        type="text"
-                                        value={settings.cloudinary?.cloudName ?? 'il2hd5tl'}
-                                        onChange={(e) =>
-                                            setSettings({
-                                                ...settings,
-                                                cloudinary: {
-                                                    ...(settings.cloudinary || {}),
-                                                    cloudName: e.target.value,
-                                                },
-                                            })
-                                        }
-                                        className="input-field"
-                                        placeholder="il2hd5tl"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1">API Key</label>
-                                    <input
-                                        type="text"
-                                        value={settings.cloudinary?.apiKey ?? '399392719424744'}
-                                        onChange={(e) =>
-                                            setSettings({
-                                                ...settings,
-                                                cloudinary: {
-                                                    ...(settings.cloudinary || {}),
-                                                    apiKey: e.target.value,
-                                                },
-                                            })
-                                        }
-                                        className="input-field"
-                                        placeholder="399392719424744"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1">API Secret</label>
-                                    <input
-                                        type="password"
-                                        value={settings.cloudinary?.apiSecret ?? 'ehqNtsQ6S22z5NusmjM6rOorGp4'}
-                                        onChange={(e) =>
-                                            setSettings({
-                                                ...settings,
-                                                cloudinary: {
-                                                    ...(settings.cloudinary || {}),
-                                                    apiSecret: e.target.value,
-                                                },
-                                            })
-                                        }
-                                        className="input-field"
-                                        placeholder="••••••••••••••••"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1">Upload Preset (Optional)</label>
-                                    <input
-                                        type="text"
-                                        value={settings.cloudinary?.uploadPreset || ''}
-                                        onChange={(e) =>
-                                            setSettings({
-                                                ...settings,
-                                                cloudinary: {
-                                                    ...(settings.cloudinary || {}),
-                                                    uploadPreset: e.target.value,
-                                                },
-                                            })
-                                        }
-                                        className="input-field"
-                                        placeholder="Unsigned preset name (if not using API Secret)"
-                                    />
-                                </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Cloud Name</label>
+                                <input
+                                    type="text"
+                                    value={settings.cloudinary?.cloudName ?? 'il2hd5tl'}
+                                    onChange={(e) =>
+                                        setSettings({
+                                            ...settings,
+                                            cloudinary: {
+                                                ...(settings.cloudinary || {}),
+                                                cloudName: e.target.value,
+                                            },
+                                        })
+                                    }
+                                    className="input-field"
+                                    placeholder="il2hd5tl"
+                                />
                             </div>
 
-                            <div className="flex flex-wrap gap-3 mt-4 items-center justify-between bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
-                                <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    <strong>Quick Setup:</strong> Cloudinary Console ➔ Settings ➔ Upload ➔ Add Unsigned Upload Preset.
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={handleTestCloudinary}
-                                    disabled={isTestingCloudinary}
-                                    className="px-3 py-1.5 text-xs font-semibold bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
-                                >
-                                    {isTestingCloudinary ? (
-                                        <>
-                                            <div className="w-3.5 h-3.5 border-2 border-primary-600/30 border-t-primary-600 rounded-full animate-spin" />
-                                            Testing...
-                                        </>
-                                    ) : (
-                                        'Test Connection 🧪'
-                                    )}
-                                </button>
+                            <div>
+                                <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">API Key</label>
+                                <input
+                                    type="text"
+                                    value={settings.cloudinary?.apiKey ?? '399392719424744'}
+                                    onChange={(e) =>
+                                        setSettings({
+                                            ...settings,
+                                            cloudinary: {
+                                                ...(settings.cloudinary || {}),
+                                                apiKey: e.target.value,
+                                            },
+                                        })
+                                    }
+                                    className="input-field"
+                                    placeholder="399392719424744"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">API Secret</label>
+                                <input
+                                    type="password"
+                                    value={settings.cloudinary?.apiSecret ?? 'ehqNtsQ6S22z5NusmjM6rOorGp4'}
+                                    onChange={(e) =>
+                                        setSettings({
+                                            ...settings,
+                                            cloudinary: {
+                                                ...(settings.cloudinary || {}),
+                                                apiSecret: e.target.value,
+                                            },
+                                        })
+                                    }
+                                    className="input-field"
+                                    placeholder="••••••••••••••••"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">Upload Preset (Optional)</label>
+                                <input
+                                    type="text"
+                                    value={settings.cloudinary?.uploadPreset || ''}
+                                    onChange={(e) =>
+                                        setSettings({
+                                            ...settings,
+                                            cloudinary: {
+                                                ...(settings.cloudinary || {}),
+                                                uploadPreset: e.target.value,
+                                            },
+                                        })
+                                    }
+                                    className="input-field"
+                                    placeholder="Unsigned preset"
+                                />
                             </div>
                         </div>
 
+                        <div className="flex flex-wrap gap-3 mt-4 items-center justify-between bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                <strong>Quick Setup:</strong> Cloudinary Console ➔ Settings ➔ Upload ➔ Add Unsigned Upload Preset.
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleTestCloudinary}
+                                disabled={isTestingCloudinary}
+                                className="px-3 py-1.5 text-xs font-semibold bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                            >
+                                {isTestingCloudinary ? (
+                                    <>
+                                        <div className="w-3.5 h-3.5 border-2 border-primary-600/30 border-t-primary-600 rounded-full animate-spin" />
+                                        Testing...
+                                    </>
+                                ) : (
+                                    'Test Connection 🧪'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="pt-2 flex justify-end">
                         <motion.button
                             onClick={handleSaveSettings}
-                            className="btn-primary flex items-center justify-center gap-2"
+                            className="btn-primary w-full sm:w-auto px-8 py-3 flex items-center justify-center gap-2 cursor-pointer shadow-md"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             disabled={isSavingSettings}
@@ -405,116 +439,130 @@ export const SettingsEditor: React.FC = () => {
                 </motion.div>
 
                 {/* Change Credentials */}
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card max-w-3xl">
-                    <h2 className="text-2xl font-bold mb-6">Change Admin Credentials</h2>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card w-full space-y-6">
+                    <h2 className="text-xl font-bold font-display pb-2 border-b border-gray-100 dark:border-gray-800 text-gray-900 dark:text-gray-100">
+                        Change Admin Credentials
+                    </h2>
 
                     <form onSubmit={handleUpdateCredentials} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-semibold mb-2">
-                                New Username
-                            </label>
-                            <input
-                                type="text"
-                                value={credentials.username}
-                                onChange={(e) =>
-                                    setCredentials({ ...credentials, username: e.target.value })
-                                }
-                                className="input-field"
-                                required
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                                    New Username
+                                </label>
+                                <input
+                                    type="text"
+                                    value={credentials.username}
+                                    onChange={(e) =>
+                                        setCredentials({ ...credentials, username: e.target.value })
+                                    }
+                                    className="input-field"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                                    New Password
+                                </label>
+                                <input
+                                    type="password"
+                                    value={credentials.password}
+                                    onChange={(e) =>
+                                        setCredentials({ ...credentials, password: e.target.value })
+                                    }
+                                    className="input-field"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                                    Confirm Password
+                                </label>
+                                <input
+                                    type="password"
+                                    value={credentials.confirmPassword}
+                                    onChange={(e) =>
+                                        setCredentials({
+                                            ...credentials,
+                                            confirmPassword: e.target.value,
+                                        })
+                                    }
+                                    className="input-field"
+                                    required
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold mb-2">
-                                New Password
-                            </label>
-                            <input
-                                type="password"
-                                value={credentials.password}
-                                onChange={(e) =>
-                                    setCredentials({ ...credentials, password: e.target.value })
-                                }
-                                className="input-field"
-                                required
-                            />
+                        <div className="flex justify-end">
+                            <motion.button
+                                type="submit"
+                                className="btn-primary w-full sm:w-auto px-8 py-3 flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                disabled={isUpdatingCredentials}
+                            >
+                                {isUpdatingCredentials ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    'Update Credentials'
+                                )}
+                            </motion.button>
                         </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold mb-2">
-                                Confirm Password
-                            </label>
-                            <input
-                                type="password"
-                                value={credentials.confirmPassword}
-                                onChange={(e) =>
-                                    setCredentials({
-                                        ...credentials,
-                                        confirmPassword: e.target.value,
-                                    })
-                                }
-                                className="input-field"
-                                required
-                            />
-                        </div>
-
-                        <motion.button
-                            type="submit"
-                            className="btn-primary flex items-center justify-center gap-2"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            disabled={isUpdatingCredentials}
-                        >
-                            {isUpdatingCredentials ? (
-                                <>
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Updating...
-                                </>
-                            ) : (
-                                'Update Credentials'
-                            )}
-                        </motion.button>
                     </form>
                 </motion.div>
 
                 {/* Data Management */}
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card max-w-3xl">
-                    <h2 className="text-2xl font-bold mb-6">Data Management</h2>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card w-full space-y-6">
+                    <h2 className="text-xl font-bold font-display pb-2 border-b border-gray-100 dark:border-gray-800 text-gray-900 dark:text-gray-100">
+                        Data Management & Backups
+                    </h2>
 
-                    <div className="space-y-4">
-                        <div>
-                            <h3 className="font-semibold mb-2">Export Data</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                Download all your portfolio data as a JSON file
-                            </p>
-                            <button onClick={handleExport} className="btn-secondary">
-                                Export Data
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Export Data */}
+                        <div className="p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40 flex flex-col justify-between">
+                            <div>
+                                <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-1">Export Data</h3>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                                    Download all your portfolio database records as a complete JSON backup file.
+                                </p>
+                            </div>
+                            <button onClick={handleExport} className="btn-secondary w-full text-center text-sm font-semibold cursor-pointer">
+                                Export Data (JSON)
                             </button>
                         </div>
 
-                        <div>
-                            <h3 className="font-semibold mb-2">Import Data</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                Upload a previously exported JSON file to restore data
-                            </p>
-                            <input
-                                type="file"
-                                accept=".json"
-                                onChange={handleImport}
-                                className="block w-full text-sm text-gray-500 dark:text-gray-400
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-lg file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-primary-50 file:text-primary-700
-                  hover:file:bg-primary-100
-                  dark:file:bg-primary-900 dark:file:text-primary-300"
-                            />
+                        {/* Import Data */}
+                        <div className="p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40 flex flex-col justify-between">
+                            <div>
+                                <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-1">Import Data</h3>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                                    Upload a previously exported JSON backup file to restore portfolio data.
+                                </p>
+                            </div>
+                            <label className="btn-secondary w-full text-center text-sm font-semibold cursor-pointer block relative">
+                                <span>Choose JSON File</span>
+                                <input
+                                    type="file"
+                                    accept=".json"
+                                    onChange={handleImport}
+                                    className="sr-only"
+                                />
+                            </label>
                         </div>
 
-                        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <h3 className="font-semibold mb-2 text-red-600">Reset All Data</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                Reset portfolio to initial demo data (this cannot be undone)
-                            </p>
+                        {/* Reset All Data */}
+                        <div className="p-5 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50/40 dark:bg-red-950/20 flex flex-col justify-between">
+                            <div>
+                                <h3 className="font-bold text-red-600 dark:text-red-400 mb-1">Reset All Data</h3>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                                    Reset portfolio to initial demo data. Warning: this action cannot be undone.
+                                </p>
+                            </div>
                             <button
                                 onClick={async () => {
                                     if (
@@ -532,7 +580,7 @@ export const SettingsEditor: React.FC = () => {
                                         }
                                     }
                                 }}
-                                className="px-6 py-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                                className="px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors text-sm font-semibold cursor-pointer w-full"
                             >
                                 Reset to Defaults
                             </button>
@@ -543,3 +591,4 @@ export const SettingsEditor: React.FC = () => {
         </div>
     );
 };
+

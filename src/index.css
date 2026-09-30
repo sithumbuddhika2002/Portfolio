@@ -9,7 +9,6 @@
   }
 
   html {
-    scroll-behavior: smooth;
     overflow-x: hidden;
   }
 
@@ -22,13 +21,32 @@
 
 @layer components {
   .glass {
-    @apply bg-white/10 dark:bg-gray-900/10 backdrop-blur-lg;
-    @apply border border-white/20 dark:border-gray-700/20;
+    @apply bg-white/70 dark:bg-gray-900/75 backdrop-blur-md;
+    @apply border border-white/50 dark:border-white/10;
+    @apply shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)];
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  .glass-card {
+    @apply bg-white/75 dark:bg-gray-900/80 backdrop-blur-md;
+    @apply border border-white/60 dark:border-white/10;
+    @apply shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)];
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  .glass-subtle {
+    @apply bg-black/[0.03] dark:bg-white/[0.04];
+    @apply border border-black/[0.05] dark:border-white/[0.06];
   }
 
   .glass-strong {
-    @apply bg-white/20 dark:bg-gray-900/20 backdrop-blur-xl;
-    @apply border border-white/30 dark:border-gray-700/30;
+    @apply bg-white/85 dark:bg-gray-900/85 backdrop-blur-lg;
+    @apply border border-white/60 dark:border-white/15;
+    @apply shadow-xl;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   .btn-primary {

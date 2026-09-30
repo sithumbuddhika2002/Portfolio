@@ -78,7 +78,7 @@ export const SkillsEditor: React.FC = () => {
     };
 
     return (
-        <div>
+        <div className="w-full pb-10">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -119,7 +119,7 @@ export const SkillsEditor: React.FC = () => {
                 </div>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
                 {skills.map((skill) => (
                     <motion.div
                         key={skill.id}

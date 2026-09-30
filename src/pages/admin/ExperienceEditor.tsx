@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import type { Experience, Education } from '../../types/portfolio';
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, BuildingOffice2Icon, ArrowUpTrayIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../../contexts/ToastContext';
+import { uploadImageSmart } from '../../utils/fileUtils';
 
 export const ExperienceEditor: React.FC = () => {
     const { data, updateSection } = usePortfolioData();
@@ -11,6 +12,8 @@ export const ExperienceEditor: React.FC = () => {
     const [experience, setExperience] = useState(data.experience || []);
     const [education, setEducation] = useState(data.education || []);
     const [isSaving, setIsSaving] = useState(false);
+    const [uploadingExpId, setUploadingExpId] = useState<string | null>(null);
+    const [uploadingEduId, setUploadingEduId] = useState<string | null>(null);
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -55,12 +58,13 @@ export const ExperienceEditor: React.FC = () => {
             type: 'education',
             skills: [],
             achievements: [],
+            logo: '',
         };
         setEducation([...education, newEdu]);
     };
 
     return (
-        <div>
+        <div className="w-full pb-10">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -76,7 +80,7 @@ export const ExperienceEditor: React.FC = () => {
                 </div>
                 <motion.button
                     onClick={handleSave}
-                    className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
+                    className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2 cursor-pointer"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     disabled={isSaving}
@@ -93,10 +97,10 @@ export const ExperienceEditor: React.FC = () => {
             </motion.div>
 
             {/* Work Experience */}
-            <div className="mb-12">
+            <div className="mb-12 w-full">
                 <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold">Work Experience</h2>
-                    <button onClick={handleAddWork} className="btn-secondary w-full sm:w-auto text-center">
+                    <button onClick={handleAddWork} className="btn-secondary w-full sm:w-auto text-center cursor-pointer">
                         <PlusIcon className="w-5 h-5 inline mr-2" />
                         Add Work
                     </button>
@@ -135,6 +139,92 @@ export const ExperienceEditor: React.FC = () => {
                                         }}
                                         className="input-field"
                                     />
+                                </div>
+                            </div>
+
+                            {/* Company Logo input (device or url) */}
+                            <div className="mb-4 p-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+                                    Company Logo
+                                </label>
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                                    {/* Preview */}
+                                    <div className="w-12 h-12 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-1 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+                                        {exp.logo ? (
+                                            <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />
+                                        ) : (
+                                            <BuildingOffice2Icon className="w-6 h-6 text-gray-400" />
+                                        )}
+                                    </div>
+
+                                    {/* URL input & Upload */}
+                                    <div className="flex-1 w-full flex items-center gap-2">
+                                        <input
+                                            type="url"
+                                            value={exp.logo || ''}
+                                            onChange={(e) => {
+                                                const newExp = [...experience];
+                                                newExp[index] = { ...exp, logo: e.target.value };
+                                                setExperience(newExp);
+                                            }}
+                                            placeholder="Paste logo URL (or upload from device)"
+                                            className="input-field text-sm flex-1"
+                                        />
+
+                                        {/* Upload from device button */}
+                                        <div className="relative shrink-0">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                id={`exp-logo-upload-${exp.id}`}
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        try {
+                                                            setUploadingExpId(exp.id);
+                                                            const { url } = await uploadImageSmart(file, data.settings, { maxWidth: 600, quality: 0.9 });
+                                                            const newExp = [...experience];
+                                                            newExp[index] = { ...exp, logo: url };
+                                                            setExperience(newExp);
+                                                            showSuccess('Logo uploaded!');
+                                                        } catch (err) {
+                                                            showError('Failed to upload logo');
+                                                        } finally {
+                                                            setUploadingExpId(null);
+                                                        }
+                                                    }
+                                                }}
+                                                className="sr-only"
+                                            />
+                                            <label
+                                                htmlFor={`exp-logo-upload-${exp.id}`}
+                                                className="px-3 py-2 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer flex items-center gap-1.5 transition-colors whitespace-nowrap"
+                                            >
+                                                {uploadingExpId === exp.id ? (
+                                                    <span>Uploading...</span>
+                                                ) : (
+                                                    <>
+                                                        <ArrowUpTrayIcon className="w-3.5 h-3.5" />
+                                                        <span>Upload</span>
+                                                    </>
+                                                )}
+                                            </label>
+                                        </div>
+
+                                        {exp.logo && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newExp = [...experience];
+                                                    newExp[index] = { ...exp, logo: '' };
+                                                    setExperience(newExp);
+                                                }}
+                                                className="text-xs text-red-500 hover:underline whitespace-nowrap px-1"
+                                            >
+                                                Clear
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -319,6 +409,92 @@ export const ExperienceEditor: React.FC = () => {
                                     }}
                                     className="input-field"
                                 />
+                            </div>
+
+                            {/* Institution Logo input (device or url) */}
+                            <div className="mb-4 p-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60">
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+                                    Institution Logo
+                                </label>
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                                    {/* Preview */}
+                                    <div className="w-12 h-12 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-1 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+                                        {edu.logo ? (
+                                            <img src={edu.logo} alt={edu.institution} className="w-full h-full object-contain" />
+                                        ) : (
+                                            <AcademicCapIcon className="w-6 h-6 text-gray-400" />
+                                        )}
+                                    </div>
+
+                                    {/* URL input & Upload */}
+                                    <div className="flex-1 w-full flex items-center gap-2">
+                                        <input
+                                            type="url"
+                                            value={edu.logo || ''}
+                                            onChange={(e) => {
+                                                const newEdu = [...education];
+                                                newEdu[index] = { ...edu, logo: e.target.value };
+                                                setEducation(newEdu);
+                                            }}
+                                            placeholder="Paste logo URL (or upload from device)"
+                                            className="input-field text-sm flex-1"
+                                        />
+
+                                        {/* Upload from device button */}
+                                        <div className="relative shrink-0">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                id={`edu-logo-upload-${edu.id}`}
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        try {
+                                                            setUploadingEduId(edu.id);
+                                                            const { url } = await uploadImageSmart(file, data.settings, { maxWidth: 600, quality: 0.9 });
+                                                            const newEdu = [...education];
+                                                            newEdu[index] = { ...edu, logo: url };
+                                                            setEducation(newEdu);
+                                                            showSuccess('Logo uploaded!');
+                                                        } catch (err) {
+                                                            showError('Failed to upload logo');
+                                                        } finally {
+                                                            setUploadingEduId(null);
+                                                        }
+                                                    }
+                                                }}
+                                                className="sr-only"
+                                            />
+                                            <label
+                                                htmlFor={`edu-logo-upload-${edu.id}`}
+                                                className="px-3 py-2 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer flex items-center gap-1.5 transition-colors whitespace-nowrap"
+                                            >
+                                                {uploadingEduId === edu.id ? (
+                                                    <span>Uploading...</span>
+                                                ) : (
+                                                    <>
+                                                        <ArrowUpTrayIcon className="w-3.5 h-3.5" />
+                                                        <span>Upload</span>
+                                                    </>
+                                                )}
+                                            </label>
+                                        </div>
+
+                                        {edu.logo && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newEdu = [...education];
+                                                    newEdu[index] = { ...edu, logo: '' };
+                                                    setEducation(newEdu);
+                                                }}
+                                                className="text-xs text-red-500 hover:underline whitespace-nowrap px-1"
+                                            >
+                                                Clear
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-4 mb-4">

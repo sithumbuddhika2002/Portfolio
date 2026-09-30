@@ -18,10 +18,15 @@ export const Navbar: React.FC = () => {
     const { isDark, toggle } = useDarkMode();
 
     useEffect(() => {
+        let isScrolled = false;
         const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
+            const nextScrolled = window.scrollY > 50;
+            if (nextScrolled !== isScrolled) {
+                isScrolled = nextScrolled;
+                setScrolled(nextScrolled);
+            }
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -39,7 +44,7 @@ export const Navbar: React.FC = () => {
         <motion.nav
             initial={{ y: -100 }}
             animate={{ y: 0 }}
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+            className={`fixed top-0 left-0 right-0 z-50 transform-gpu transition-all duration-300 ${scrolled
                     ? 'glass-strong shadow-lg py-2 sm:py-4'
                     : 'bg-transparent py-3 sm:py-6'
                 }`}

@@ -35,7 +35,7 @@ export function TextRoll({
   duration = 0.45,
   getEnterDelay = (i) => i * 0.02,
   getExitDelay = (i) => i * 0.02 + 0.03,
-  className,
+  className = '',
   transition = { ease: [0.22, 1, 0.36, 1] },
   variants,
   onAnimationComplete,
@@ -80,12 +80,12 @@ export function TextRoll({
 
   const defaultVariants = {
     enter: {
-      initial: { rotateX: 0, opacity: 1 },
-      animate: { rotateX: -90, opacity: 0 },
+      initial: { rotateX: 0, opacity: 1, y: '0%' },
+      animate: { rotateX: -90, opacity: 0, y: '-35%' },
     },
     exit: {
-      initial: { rotateX: 90, opacity: 0 },
-      animate: { rotateX: 0, opacity: 1 },
+      initial: { rotateX: 90, opacity: 0, y: '35%' },
+      animate: { rotateX: 0, opacity: 1, y: '0%' },
     },
   } as const;
 
@@ -95,7 +95,7 @@ export function TextRoll({
       : displayedText.length;
 
   return (
-    <span className={className}>
+    <span className={`inline-flex whitespace-nowrap overflow-hidden ${className}`}>
       {Array.from({ length: maxLen }).map((_, i) => {
         const prevChar = prevText !== null ? (prevText[i] ?? '') : null;
         const nextChar = displayedText[i] ?? '';
@@ -104,13 +104,13 @@ export function TextRoll({
         return (
           <span
             key={`slot-${i}`}
-            className="relative inline-block [perspective:1000px] [transform-style:preserve-3d] align-baseline"
+            className="relative inline-block overflow-hidden [perspective:1000px] align-baseline"
             aria-hidden="true"
           >
             {prevText !== null && (
               <motion.span
                 key={`prev-${animCycle}-${i}`}
-                className="absolute top-0 left-0 inline-block [backface-visibility:hidden] [transform-origin:50%_25%]"
+                className="absolute top-0 left-0 inline-block [backface-visibility:hidden] [transform-origin:50%_50%]"
                 initial={
                   variants?.enter?.initial ?? defaultVariants.enter.initial
                 }
@@ -129,11 +129,11 @@ export function TextRoll({
 
             <motion.span
               key={`next-${animCycle}-${i}`}
-              className="absolute top-0 left-0 inline-block [backface-visibility:hidden] [transform-origin:50%_100%]"
+              className="absolute top-0 left-0 inline-block [backface-visibility:hidden] [transform-origin:50%_50%]"
               initial={
                 prevText !== null
                   ? (variants?.exit?.initial ?? defaultVariants.exit.initial)
-                  : { rotateX: 0, opacity: 1 }
+                  : { rotateX: 0, opacity: 1, y: '0%' }
               }
               animate={variants?.exit?.animate ?? defaultVariants.exit.animate}
               transition={{

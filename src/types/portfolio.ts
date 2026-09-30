@@ -7,6 +7,18 @@ export interface PortfolioData {
     education: Education[];
     contact: ContactInfo;
     settings: Settings;
+    companies?: Company[];
+}
+
+export interface Company {
+    id: string;
+    name: string;
+    position: string;
+    logo?: string;
+    period?: string;
+    url?: string;
+    current?: boolean;
+    description?: string;
 }
 
 export interface Profile {
@@ -56,6 +68,8 @@ export interface Experience {
     type: 'work';
     skills?: string[];
     achievements?: string[];
+    logo?: string;
+    url?: string;
 }
 
 export interface Education {
@@ -69,6 +83,8 @@ export interface Education {
     type: 'education';
     skills?: string[];
     achievements?: string[];
+    logo?: string;
+    url?: string;
 }
 
 export interface ContactInfo {

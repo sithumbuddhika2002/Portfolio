@@ -125,301 +125,361 @@ export const ProfileEditor: React.FC = () => {
     };
 
     return (
-        <div>
+        <div className="w-full pb-10">
+            {/* Header with Save Button on top right */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8"
+                className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center justify-between"
             >
-                <h1 className="text-2xl sm:text-3xl font-bold font-display mb-2">Edit Profile</h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                    Update your personal information and bio
-                </p>
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display mb-2">Edit Profile</h1>
+                    <p className="text-gray-600 dark:text-gray-400">
+                        Update your personal information, titles, bio, and images
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <motion.button
+                        type="button"
+                        onClick={handleSubmit}
+                        className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2 cursor-pointer"
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span>Saving...</span>
+                            </>
+                        ) : (
+                            'Save Changes'
+                        )}
+                    </motion.button>
+                </div>
             </motion.div>
 
             <motion.form
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 onSubmit={handleSubmit}
-                className="card max-w-3xl space-y-6"
+                className="w-full space-y-6"
             >
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-semibold mb-2">Name</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={profile.name}
-                            onChange={handleChange}
-                            className="input-field"
-                            required
-                        />
-                    </div>
+                {/* 1. Basic Details Card */}
+                <div className="card w-full space-y-6">
+                    <h2 className="text-lg font-bold font-display text-gray-900 dark:text-gray-100 pb-2 border-b border-gray-100 dark:border-gray-800">
+                        Personal Information
+                    </h2>
 
-                    <div>
-                        <label className="block text-sm font-semibold mb-2">Primary Title</label>
-                        <input
-                            type="text"
-                            name="title"
-                            value={profile.title}
-                            onChange={handleChange}
-                            className="input-field"
-                            required
-                        />
-                    </div>
-                </div>
-
-                {/* Multiple Hero Titles (Animated with TextRoll) */}
-                <div className="p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/40 space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <span>Rotating Hero Titles</span>
-                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary-500/10 text-primary-600 dark:text-primary-400 font-medium border border-primary-500/20">
-                                    TextRoll Animation
-                                </span>
-                            </h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                These titles cycle smoothly in the Hero section using the 3D TextRoll cylinder flip animation.
-                            </p>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Name</label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={profile.name}
+                                onChange={handleChange}
+                                className="input-field"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Primary Title</label>
+                            <input
+                                type="text"
+                                name="title"
+                                value={profile.title}
+                                onChange={handleChange}
+                                className="input-field"
+                                required
+                            />
                         </div>
                     </div>
 
-                    {/* Titles List */}
-                    <div className="space-y-2.5">
-                        {(profile.titles || []).map((t, idx) => (
-                            <div key={idx} className="flex items-center gap-2">
-                                <span className="text-xs font-mono text-gray-400 w-5 text-right">{idx + 1}.</span>
-                                <input
-                                    type="text"
-                                    value={t}
-                                    onChange={(e) => handleTitleChange(idx, e.target.value)}
-                                    className="input-field py-2 text-sm flex-1"
-                                    placeholder="e.g. Full Stack Developer & Designer"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveTitle(idx)}
-                                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
-                                    title="Delete title"
-                                >
-                                    <TrashIcon className="w-5 h-5" />
-                                </button>
+                    {/* Multiple Hero Titles (Animated with TextRoll) */}
+                    <div className="p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/40 space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <span>Rotating Hero Titles</span>
+                                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary-500/10 text-primary-600 dark:text-primary-400 font-medium border border-primary-500/20">
+                                        TextRoll Animation
+                                    </span>
+                                </h3>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    These titles cycle smoothly in the Hero section using the 3D TextRoll cylinder flip animation.
+                                </p>
                             </div>
-                        ))}
-                    </div>
+                        </div>
 
-                    {/* Add Title Input */}
-                    <div className="flex gap-2 pt-1">
-                        <input
-                            type="text"
-                            value={newTitleInput}
-                            onChange={(e) => setNewTitleInput(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    handleAddTitle();
-                                }
-                            }}
-                            placeholder="Add another rotating title..."
-                            className="input-field py-2 text-sm flex-1"
-                        />
-                        <button
-                            type="button"
-                            onClick={handleAddTitle}
-                            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 active:scale-95 text-white rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 shadow-sm"
-                        >
-                            <PlusIcon className="w-4 h-4" />
-                            <span>Add Title</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-semibold mb-2">Bio (Hero Section Tagline)</label>
-                    <textarea
-                        name="bio"
-                        value={profile.bio}
-                        onChange={handleChange}
-                        rows={3}
-                        className="input-field resize-none"
-                        required
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-semibold mb-2">About Me Description</label>
-                    <textarea
-                        name="aboutMe"
-                        value={profile.aboutMe}
-                        onChange={handleChange}
-                        rows={5}
-                        className="input-field resize-none"
-                        placeholder="Detailed professional bio shown in the About Me section"
-                    />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-semibold mb-2">
-                            Profile Image
-                        </label>
-                        <div className="space-y-3">
-                            <div className="flex gap-2">
-                                <input
-                                    type="url"
-                                    name="image"
-                                    value={profile.image}
-                                    onChange={handleChange}
-                                    className="input-field flex-1"
-                                    placeholder="Enter URL or upload image"
-                                    required
-                                />
-                                <div className="relative">
+                        {/* Titles List */}
+                        <div className="space-y-2.5">
+                            {(profile.titles || []).map((t, idx) => (
+                                <div key={idx} className="flex items-center gap-2">
+                                    <span className="text-xs font-mono text-gray-400 w-6 text-right flex-shrink-0">{idx + 1}.</span>
                                     <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleImageUpload(e, 'image')}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        disabled={isUploadingProfile}
+                                        type="text"
+                                        value={t}
+                                        onChange={(e) => handleTitleChange(idx, e.target.value)}
+                                        className="input-field py-2 text-sm flex-1 min-w-0"
+                                        placeholder="e.g. Full Stack Developer & Designer"
                                     />
                                     <button
                                         type="button"
-                                        className={`px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
-                                            isUploadingProfile ? 'opacity-50 cursor-not-allowed' : ''
-                                        }`}
+                                        onClick={() => handleRemoveTitle(idx)}
+                                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                        title="Delete title"
                                     >
-                                        {isUploadingProfile ? 'Uploading...' : 'Upload'}
+                                        <TrashIcon className="w-5 h-5" />
                                     </button>
                                 </div>
-                            </div>
-                            {profile.image && (
-                                <div className="relative w-full h-24 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                                    <img
-                                        src={profile.image}
-                                        alt="Profile Preview"
-                                        className="w-full h-full object-contain"
-                                    />
-                                </div>
-                            )}
+                            ))}
+                        </div>
+
+                        {/* Add Title Input */}
+                        <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                            <input
+                                type="text"
+                                value={newTitleInput}
+                                onChange={(e) => setNewTitleInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddTitle();
+                                    }
+                                }}
+                                placeholder="Add another rotating title..."
+                                className="input-field py-2 text-sm flex-1 min-w-0"
+                            />
+                            <button
+                                type="button"
+                                onClick={handleAddTitle}
+                                className="px-4 py-2 bg-primary-600 hover:bg-primary-700 active:scale-95 text-white rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
+                            >
+                                <PlusIcon className="w-4 h-4" />
+                                <span>Add Title</span>
+                            </button>
                         </div>
                     </div>
+                </div>
 
-                    <div>
-                        <label className="block text-sm font-semibold mb-2">
-                            About Me Image
-                        </label>
-                        <div className="space-y-3">
-                            <div className="flex gap-2">
-                                <input
-                                    type="url"
-                                    name="aboutImage"
-                                    value={profile.aboutImage || ''}
-                                    onChange={handleChange}
-                                    className="input-field flex-1"
-                                    placeholder="Leave empty to use Profile Image"
-                                />
-                                <div className="relative">
+                {/* 2. Bio & About Card */}
+                <div className="card w-full space-y-6">
+                    <h2 className="text-lg font-bold font-display text-gray-900 dark:text-gray-100 pb-2 border-b border-gray-100 dark:border-gray-800">
+                        Bio & Descriptions
+                    </h2>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                                Bio (Hero Section Tagline)
+                            </label>
+                            <textarea
+                                name="bio"
+                                value={profile.bio}
+                                onChange={handleChange}
+                                rows={5}
+                                className="input-field resize-none"
+                                placeholder="Short punchy tagline for the top hero banner"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                                About Me Description
+                            </label>
+                            <textarea
+                                name="aboutMe"
+                                value={profile.aboutMe}
+                                onChange={handleChange}
+                                rows={5}
+                                className="input-field resize-none"
+                                placeholder="Detailed professional bio shown in the About Me section"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Visual Media Images Card */}
+                <div className="card w-full space-y-6">
+                    <h2 className="text-lg font-bold font-display text-gray-900 dark:text-gray-100 pb-2 border-b border-gray-100 dark:border-gray-800">
+                        Profile & Avatar Images
+                    </h2>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Profile Image */}
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                                Profile Image (Hero Section)
+                            </label>
+                            <div className="space-y-3">
+                                <div className="flex flex-col sm:flex-row gap-2">
                                     <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleImageUpload(e, 'aboutImage')}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        disabled={isUploadingAbout}
+                                        type="url"
+                                        name="image"
+                                        value={profile.image}
+                                        onChange={handleChange}
+                                        className="input-field flex-1 min-w-0"
+                                        placeholder="Enter URL or upload image"
+                                        required
                                     />
-                                    <button
-                                        type="button"
-                                        className={`px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
-                                            isUploadingAbout ? 'opacity-50 cursor-not-allowed' : ''
-                                        }`}
-                                    >
-                                        {isUploadingAbout ? 'Uploading...' : 'Upload'}
-                                    </button>
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => handleImageUpload(e, 'image')}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                            disabled={isUploadingProfile}
+                                        />
+                                        <button
+                                            type="button"
+                                            className={`w-full sm:w-auto px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors whitespace-nowrap cursor-pointer text-sm font-medium ${
+                                                isUploadingProfile ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                        >
+                                            {isUploadingProfile ? 'Uploading...' : 'Upload'}
+                                        </button>
+                                    </div>
                                 </div>
+                                {profile.image && (
+                                    <div className="relative w-full h-32 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-2 flex items-center justify-center">
+                                        <img
+                                            src={profile.image}
+                                            alt="Profile Preview"
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </div>
+                                )}
                             </div>
-                            {(profile.aboutImage || profile.image) && (
-                                <div className="relative w-full h-24 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                                    <img
-                                        src={profile.aboutImage || profile.image}
-                                        alt="About Preview"
-                                        className="w-full h-full object-contain"
+                        </div>
+
+                        {/* About Me Image */}
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                                About Me Image (Optional)
+                            </label>
+                            <div className="space-y-3">
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <input
+                                        type="url"
+                                        name="aboutImage"
+                                        value={profile.aboutImage || ''}
+                                        onChange={handleChange}
+                                        className="input-field flex-1 min-w-0"
+                                        placeholder="Leave empty to use Profile Image"
                                     />
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => handleImageUpload(e, 'aboutImage')}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                            disabled={isUploadingAbout}
+                                        />
+                                        <button
+                                            type="button"
+                                            className={`w-full sm:w-auto px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors whitespace-nowrap cursor-pointer text-sm font-medium ${
+                                                isUploadingAbout ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                        >
+                                            {isUploadingAbout ? 'Uploading...' : 'Upload'}
+                                        </button>
+                                    </div>
                                 </div>
-                            )}
+                                {(profile.aboutImage || profile.image) && (
+                                    <div className="relative w-full h-32 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-2 flex items-center justify-center">
+                                        <img
+                                            src={profile.aboutImage || profile.image}
+                                            alt="About Preview"
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-semibold mb-2">Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={profile.email}
-                            onChange={handleChange}
-                            className="input-field"
-                            required
-                        />
+                {/* 4. Contact & Links Card */}
+                <div className="card w-full space-y-6">
+                    <h2 className="text-lg font-bold font-display text-gray-900 dark:text-gray-100 pb-2 border-b border-gray-100 dark:border-gray-800">
+                        Contact & Links
+                    </h2>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={profile.email}
+                                onChange={handleChange}
+                                className="input-field"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Phone</label>
+                            <input
+                                type="tel"
+                                name="phone"
+                                value={profile.phone}
+                                onChange={handleChange}
+                                className="input-field"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Location</label>
+                            <input
+                                type="text"
+                                name="location"
+                                value={profile.location}
+                                onChange={handleChange}
+                                className="input-field"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Resume / CV Link</label>
+                            <input
+                                type="url"
+                                name="resumeUrl"
+                                value={profile.resumeUrl}
+                                onChange={handleChange}
+                                className="input-field"
+                                placeholder="https://drive.google.com/..."
+                            />
+                        </div>
                     </div>
-
-                    <div>
-                        <label className="block text-sm font-semibold mb-2">Phone</label>
-                        <input
-                            type="tel"
-                            name="phone"
-                            value={profile.phone}
-                            onChange={handleChange}
-                            className="input-field"
-                            required
-                        />
-                    </div>
                 </div>
 
-                <div>
-                    <label className="block text-sm font-semibold mb-2">Location</label>
-                    <input
-                        type="text"
-                        name="location"
-                        value={profile.location}
-                        onChange={handleChange}
-                        className="input-field"
-                        required
-                    />
+                {/* Bottom Submit Action */}
+                <div className="flex items-center justify-end pt-2">
+                    <motion.button
+                        type="submit"
+                        className="btn-primary w-full sm:w-auto px-10 py-3 text-base flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span>Saving Profile...</span>
+                            </>
+                        ) : (
+                            'Save Changes'
+                        )}
+                    </motion.button>
                 </div>
-
-                <div>
-                    <label className="block text-sm font-semibold mb-2">Resume / CV Link</label>
-                    <input
-                        type="url"
-                        name="resumeUrl"
-                        value={profile.resumeUrl}
-                        onChange={handleChange}
-                        className="input-field"
-                        placeholder="e.g., https://drive.google.com/..."
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                        Paste the public link to your CV (Google Drive, Dropbox, etc.)
-                    </p>
-                </div>
-
-                <motion.button
-                    type="submit"
-                    className="btn-primary flex items-center justify-center gap-2"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    disabled={isSaving}
-                >
-                    {isSaving ? (
-                        <>
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Saving...
-                        </>
-                    ) : (
-                        'Save Changes'
-                    )}
-                </motion.button>
             </motion.form>
         </div>
     );
 };
+

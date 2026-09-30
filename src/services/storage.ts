@@ -9,7 +9,14 @@ export const storage = {
         try {
             const data = localStorage.getItem(STORAGE_KEY);
             if (data) {
-                return JSON.parse(data);
+                const parsed = JSON.parse(data);
+                return {
+                    ...initialData,
+                    ...parsed,
+                    companies: parsed.companies && parsed.companies.length > 0
+                        ? parsed.companies
+                        : (initialData.companies || []),
+                };
             }
             // Initialize with default data if not exists
             storage.setData(initialData);

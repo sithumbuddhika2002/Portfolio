@@ -166,10 +166,12 @@ export const ExperienceSection: React.FC = () => {
                                             }`}
                                         >
                                             <div className="flex items-center gap-2 mb-1.5">
-                                                <div className={`w-6 h-6 rounded-md bg-gradient-to-r ${
-                                                    isWork ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-pink-500'
-                                                } flex items-center justify-center`}>
-                                                    {isWork ? (
+                                                <div className={`w-6 h-6 rounded-md ${
+                                                    item.logo ? 'bg-white dark:bg-gray-800 p-0.5 border border-gray-200 dark:border-gray-700' : `bg-gradient-to-r ${isWork ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-pink-500'}`
+                                                } flex items-center justify-center overflow-hidden`}>
+                                                    {item.logo ? (
+                                                        <img src={item.logo} alt="" className="w-full h-full object-contain" />
+                                                    ) : isWork ? (
                                                         <BriefcaseIcon className="w-3.5 h-3.5 text-white" />
                                                     ) : (
                                                         <AcademicCapIcon className="w-3.5 h-3.5 text-white" />
@@ -229,14 +231,23 @@ export const ExperienceSection: React.FC = () => {
                                                 <span className="text-xs font-bold text-gray-400 dark:text-gray-500 block mb-1">
                                                     {new Date(item.startDate).getFullYear()} - {item.endDate === 'Present' ? 'Present' : new Date(item.endDate).getFullYear()}
                                                 </span>
-                                                <h4 className={`text-base font-bold transition-colors ${
-                                                    isActive ? 'text-gray-950 dark:text-white' : 'text-gray-700 dark:text-gray-400'
-                                                }`}>
-                                                    {isWork ? item.position : item.degree}
-                                                </h4>
-                                                <p className="text-sm text-primary-600 dark:text-primary-400 font-semibold font-display">
-                                                    {isWork ? item.company : item.institution}
-                                                </p>
+                                                <div className="flex items-center gap-3">
+                                                    {item.logo && (
+                                                        <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-0.5 shrink-0 flex items-center justify-center overflow-hidden">
+                                                            <img src={item.logo} alt="" className="w-full h-full object-contain" />
+                                                        </div>
+                                                    )}
+                                                    <div className="min-w-0">
+                                                        <h4 className={`text-base font-bold truncate transition-colors ${
+                                                            isActive ? 'text-gray-950 dark:text-white' : 'text-gray-700 dark:text-gray-400'
+                                                        }`}>
+                                                            {isWork ? item.position : item.degree}
+                                                        </h4>
+                                                        <p className="text-sm text-primary-600 dark:text-primary-400 font-semibold font-display truncate">
+                                                            {isWork ? item.company : item.institution}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </button>
                                         </div>
                                     );
@@ -316,10 +327,14 @@ export const ExperienceSection: React.FC = () => {
 
                                             {/* Header */}
                                             <div className="flex items-start gap-4 mb-6">
-                                                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-r ${
-                                                    isWork ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-pink-500'
-                                                } flex items-center justify-center shadow-lg transform -rotate-2 hover:rotate-0 transition-transform duration-300 flex-shrink-0`}>
-                                                    {isWork ? (
+                                                <div className={`w-14 h-14 rounded-2xl ${
+                                                    item.logo 
+                                                        ? 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2' 
+                                                        : `bg-gradient-to-r ${isWork ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-pink-500'}`
+                                                } flex items-center justify-center shadow-lg transform -rotate-2 hover:rotate-0 transition-transform duration-300 flex-shrink-0 overflow-hidden`}>
+                                                    {item.logo ? (
+                                                        <img src={item.logo} alt={isWork ? item.company : item.institution} className="w-full h-full object-contain" />
+                                                    ) : isWork ? (
                                                         <BriefcaseIcon className="w-8 h-8 text-white" />
                                                     ) : (
                                                         <AcademicCapIcon className="w-8 h-8 text-white" />

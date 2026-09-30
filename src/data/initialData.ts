@@ -116,6 +116,7 @@ export const initialData: PortfolioData = {
             endDate: '2020-05',
             location: 'California, USA',
             type: 'education',
+            logo: '',
             skills: ['Python', 'Java', 'Data Structures', 'Algorithms', 'Software Engineering'],
             achievements: [
                 'Graduated Magna Cum Laude with a cumulative GPA of 3.85/4.0.',
@@ -135,6 +136,38 @@ export const initialData: PortfolioData = {
             twitter: 'https://twitter.com/yourusername',
         },
     },
+    companies: [
+        {
+            id: '1',
+            name: 'Foresight Engineering',
+            position: 'Associate Software Engineer',
+            logo: '',
+            period: '2023 - Present',
+            url: '',
+            current: true,
+            description: 'Engineering cutting-edge software solutions and scalable web architectures.'
+        },
+        {
+            id: '2',
+            name: 'Tech Innovation Inc.',
+            position: 'Senior Full Stack Developer',
+            logo: '',
+            period: '2022 - 2023',
+            url: '',
+            current: false,
+            description: 'Led development of customer-facing web applications serving 100k+ users.'
+        },
+        {
+            id: '3',
+            name: 'StartupXYZ',
+            position: 'Full Stack Developer',
+            logo: '',
+            period: '2020 - 2021',
+            url: '',
+            current: false,
+            description: 'Built and maintained multiple high-performance web applications.'
+        },
+    ],
     settings: {
         siteTitle: 'Your Name - Portfolio',
         tagline: 'Building the future, one line of code at a time',

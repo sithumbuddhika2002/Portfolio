@@ -105,7 +105,7 @@ export const ProjectsEditor: React.FC = () => {
 
 
     return (
-        <div>
+        <div className="w-full pb-10">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -120,7 +120,7 @@ export const ProjectsEditor: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <motion.button
                         onClick={handleAdd}
-                        className="btn-secondary w-full sm:w-auto text-center"
+                        className="btn-secondary w-full sm:w-auto text-center cursor-pointer"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
@@ -129,7 +129,7 @@ export const ProjectsEditor: React.FC = () => {
                     </motion.button>
                     <motion.button
                         onClick={handleSave}
-                        className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
+                        className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2 cursor-pointer"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         disabled={isSavingAll}
@@ -146,7 +146,7 @@ export const ProjectsEditor: React.FC = () => {
                 </div>
             </motion.div>
 
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {[...projects]
                     .sort((a, b) => {
                         if (a.featured !== b.featured) {
@@ -155,33 +155,57 @@ export const ProjectsEditor: React.FC = () => {
                         return (b.date || '').localeCompare(a.date || '');
                     })
                     .map((project) => (
-                    <motion.div key={project.id} layout className="card">
-                        <div className="flex items-start gap-4">
+                    <motion.div key={project.id} layout className="card flex flex-col justify-between hover:border-primary-500/40 transition-colors">
+                        <div className="flex flex-col sm:flex-row items-start gap-4">
                             <img
                                 src={project.image}
                                 alt={project.title}
-                                className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
+                                className="w-full sm:w-28 sm:h-28 h-40 rounded-xl object-cover flex-shrink-0"
                             />
-                            <div className="flex-1">
-                                <h3 className="text-lg font-bold mb-1">{project.title}</h3>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{project.title}</h3>
+                                    {project.featured && (
+                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-accent-500/10 text-accent-600 dark:text-accent-400 font-semibold border border-accent-500/20">
+                                            Featured
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-xs text-primary-600 dark:text-primary-400 font-medium mb-1.5">
+                                    {project.category}
+                                </p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
                                     {project.description}
                                 </p>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setEditingProject(project)}
-                                        className="text-sm text-primary-600 hover:text-primary-700"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(project.id)}
-                                        className="text-sm text-red-600 hover:text-red-700"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
+                                {project.technologies && project.technologies.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mb-2">
+                                        {project.technologies.slice(0, 4).map((tech, i) => (
+                                            <span key={i} className="text-[11px] px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                                                {tech}
+                                            </span>
+                                        ))}
+                                        {project.technologies.length > 4 && (
+                                            <span className="text-[11px] px-1.5 py-0.5 text-gray-400">
+                                                +{project.technologies.length - 4}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
+                        </div>
+                        <div className="flex items-center justify-end gap-2 pt-3 mt-3 border-t border-gray-100 dark:border-gray-800 text-sm">
+                            <button
+                                onClick={() => setEditingProject(project)}
+                                className="px-3 py-1.5 text-xs font-semibold text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-950/30 rounded-lg transition-colors cursor-pointer"
+                            >
+                                Edit
+                            </button>
+                            <button
+                                onClick={() => handleDelete(project.id)}
+                                className="px-3 py-1.5 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
+                            >
+                                Delete
+                            </button>
                         </div>
                     </motion.div>
                 ))}

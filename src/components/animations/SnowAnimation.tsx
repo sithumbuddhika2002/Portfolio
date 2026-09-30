@@ -17,16 +17,17 @@ export const SnowAnimation: React.FC = () => {
     }, []);
 
     return (
-        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden" style={{ contain: 'strict' }}>
             {snowflakes.map((flake) => (
                 <div
                     key={flake.id}
-                    className="absolute top-[-10px] bg-white rounded-full backdrop-blur-sm"
+                    className="absolute top-[-10px] bg-white rounded-full will-change-transform"
                     style={{
                         left: `${flake.left}%`,
                         width: `${flake.size}px`,
                         height: `${flake.size}px`,
                         opacity: flake.opacity,
+                        transform: 'translateZ(0)',
                         animation: `fall ${flake.duration}s linear infinite`,
                         animationDelay: `${flake.delay}s`,
                     }}

@@ -22,15 +22,15 @@ export const HeroSection: React.FC = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const heroRef = useRef<HTMLElement>(null);
 
-    // Interactive mouse spotlight position across hero section
-    const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+    // Interactive mouse spotlight position across hero section (using ref to avoid re-rendering entire component)
+    const spotlightRef = useRef<HTMLDivElement>(null);
 
     const handleHeroMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+        if (!spotlightRef.current) return;
         const rect = e.currentTarget.getBoundingClientRect();
-        setMousePos({
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top,
-        });
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        spotlightRef.current.style.background = `radial-gradient(750px circle at ${x}px ${y}px, rgba(14, 165, 233, 0.1), rgba(99, 102, 241, 0.04), transparent 70%)`;
     };
 
     // 3D perspective spring tilt for video container
@@ -61,17 +61,17 @@ export const HeroSection: React.FC = () => {
     // In-place Interactive Cyber Glitch Scramble for Name Morphing
     const originalName = profile.name || 'Sithum Buddhika';
     const [displayName, setDisplayName] = useState(originalName);
-    const [isAlias, setIsAlias] = useState(false);
     const [isGlitching, setIsGlitching] = useState(false);
     const [glitchOffset, setGlitchOffset] = useState({ x: 0, y: 0 });
+    const isHoveredRef = useRef(false);
     const scrambleTimerRef = useRef<number | null>(null);
 
-    // Sync displayName if profile updates
+    // Sync displayName if profile updates while not hovered
     useEffect(() => {
-        if (!isAlias && !isGlitching) {
+        if (!isHoveredRef.current && !isGlitching) {
             setDisplayName(profile.name || 'Sithum Buddhika');
         }
-    }, [profile.name, isAlias, isGlitching]);
+    }, [profile.name, isGlitching]);
 
     // Clean up timer on unmount
     useEffect(() => {
@@ -85,17 +85,18 @@ export const HeroSection: React.FC = () => {
     const triggerGlitchScramble = (target: 'alias' | 'original') => {
         if (scrambleTimerRef.current) {
             clearInterval(scrambleTimerRef.current);
+            scrambleTimerRef.current = null;
         }
 
         const targetIsAlias = target === 'alias';
-        const fromTokens = targetIsAlias ? Array.from(originalName) : ALIAS_TOKENS;
-        const toTokens = targetIsAlias ? ALIAS_TOKENS : Array.from(originalName);
-        const finalString = targetIsAlias ? ALIAS_STRING : originalName;
 
         setIsGlitching(true);
         let step = 0;
-        const totalSteps = 14;
+        const totalSteps = 12;
         const intervalMs = 24;
+
+        const fromChars = Array.from(displayName);
+        const toChars = targetIsAlias ? ALIAS_TOKENS : Array.from(originalName);
 
         scrambleTimerRef.current = window.setInterval(() => {
             step++;
@@ -104,21 +105,21 @@ export const HeroSection: React.FC = () => {
             // Chromatic jitter offset during glitch
             if (step < totalSteps) {
                 setGlitchOffset({
-                    x: (Math.random() - 0.5) * 3,
-                    y: (Math.random() - 0.5) * 1.5,
+                    x: (Math.random() - 0.5) * 2.5,
+                    y: (Math.random() - 0.5) * 1.2,
                 });
             }
 
             const currentLength = Math.round(
-                fromTokens.length + (toTokens.length - fromTokens.length) * progress
+                fromChars.length + (toChars.length - fromChars.length) * progress
             );
-            const lockedCount = Math.floor(progress * toTokens.length);
+            const lockedCount = Math.floor(progress * toChars.length);
 
             let scrambled = '';
             for (let i = 0; i < currentLength; i++) {
                 if (i < lockedCount) {
-                    scrambled += toTokens[i] || '';
-                } else if (i < toTokens.length && toTokens[i] === ' ') {
+                    scrambled += toChars[i] || '';
+                } else if (i < toChars.length && toChars[i] === ' ') {
                     scrambled += ' ';
                 } else {
                     scrambled += GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
@@ -128,29 +129,32 @@ export const HeroSection: React.FC = () => {
             setDisplayName(scrambled);
 
             if (step >= totalSteps) {
-                if (scrambleTimerRef.current) clearInterval(scrambleTimerRef.current);
-                setDisplayName(finalString);
-                setIsAlias(targetIsAlias);
+                if (scrambleTimerRef.current) {
+                    clearInterval(scrambleTimerRef.current);
+                    scrambleTimerRef.current = null;
+                }
+                // Enforce strictly: alias ONLY when cursor is hovered!
+                const shouldBeAlias = isHoveredRef.current;
+                setDisplayName(shouldBeAlias ? ALIAS_STRING : originalName);
                 setIsGlitching(false);
                 setGlitchOffset({ x: 0, y: 0 });
+
+                // If cursor state flipped while animating, smoothly correct to target
+                if (shouldBeAlias !== targetIsAlias) {
+                    triggerGlitchScramble(shouldBeAlias ? 'alias' : 'original');
+                }
             }
         }, intervalMs);
     };
 
     const handleNameMouseEnter = () => {
-        if (!isAlias) {
-            triggerGlitchScramble('alias');
-        }
+        isHoveredRef.current = true;
+        triggerGlitchScramble('alias');
     };
 
     const handleNameMouseLeave = () => {
-        if (isAlias) {
-            triggerGlitchScramble('original');
-        }
-    };
-
-    const handleNameClick = () => {
-        triggerGlitchScramble(isAlias ? 'original' : 'alias');
+        isHoveredRef.current = false;
+        triggerGlitchScramble('original');
     };
 
     // Multiple titles rotation using TextRoll animation
@@ -249,30 +253,40 @@ export const HeroSection: React.FC = () => {
         >
             {/* Interactive Dynamic Mouse Spotlight */}
             <div
+                ref={spotlightRef}
                 className="pointer-events-none absolute inset-0 -z-10 transition-opacity duration-300 opacity-60 dark:opacity-90"
                 style={{
-                    background: `radial-gradient(750px circle at ${mousePos.x}px ${mousePos.y}px, rgba(14, 165, 233, 0.1), rgba(99, 102, 241, 0.04), transparent 70%)`,
+                    background: 'radial-gradient(750px circle at -1000px -1000px, rgba(14, 165, 233, 0.1), rgba(99, 102, 241, 0.04), transparent 70%)',
                 }}
             />
 
             {/* Subtle Tech Grid Texture */}
             <div className="absolute inset-0 -z-20 bg-[linear-gradient(to_right,#38bdf80a_1px,transparent_1px),linear-gradient(to_bottom,#38bdf80a_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_60%,transparent_100%)] pointer-events-none" />
 
-            {/* Harmonized Studio Lighting & Ambient Rim Glows */}
-            <div className="absolute inset-0 -z-30 pointer-events-none overflow-hidden">
+            {/* Harmonized Studio Lighting & Ambient Rim Glows - Isolated with containment and zero filter blur */}
+            <div className="absolute inset-0 -z-30 pointer-events-none overflow-hidden" style={{ contain: 'strict' }}>
                 {/* Left Cyan Typography Glow */}
-                <div className="absolute top-1/4 -left-20 w-80 h-80 sm:w-[500px] sm:h-[500px] bg-primary-500/15 dark:bg-primary-500/10 rounded-full filter blur-[120px] animate-float" />
+                <div 
+                    className="absolute top-1/4 -left-20 w-80 h-80 sm:w-[500px] sm:h-[500px] rounded-full pointer-events-none" 
+                    style={{
+                        background: 'radial-gradient(circle, rgba(14, 165, 233, 0.16) 0%, rgba(14, 165, 233, 0.05) 45%, transparent 70%)',
+                    }}
+                />
                 
                 {/* Right Soft Studio Rim Light behind Video */}
                 <div 
-                    className="absolute top-1/3 right-4 sm:right-24 w-72 h-72 sm:w-[480px] sm:h-[480px] bg-cyan-500/10 dark:bg-sky-500/10 rounded-full filter blur-[130px] animate-float" 
-                    style={{ animationDelay: '2.5s' }} 
+                    className="absolute top-1/3 right-4 sm:right-24 w-72 h-72 sm:w-[480px] sm:h-[480px] rounded-full pointer-events-none" 
+                    style={{
+                        background: 'radial-gradient(circle, rgba(6, 182, 212, 0.14) 0%, rgba(14, 165, 233, 0.04) 45%, transparent 70%)',
+                    }}
                 />
 
                 {/* Subtle Deep Indigo Bottom Ambiance */}
                 <div 
-                    className="absolute -bottom-20 left-1/3 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/10 rounded-full filter blur-[140px] animate-float" 
-                    style={{ animationDelay: '4s' }} 
+                    className="absolute -bottom-20 left-1/3 w-96 h-96 rounded-full pointer-events-none" 
+                    style={{
+                        background: 'radial-gradient(circle, rgba(99, 102, 241, 0.14) 0%, rgba(99, 102, 241, 0.04) 50%, transparent 70%)',
+                    }}
                 />
             </div>
 
@@ -293,20 +307,19 @@ export const HeroSection: React.FC = () => {
                             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 font-medium">
                                 Hi, I'm
                             </p>
-                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-display mt-2 tracking-tight">
+                            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-display mt-2 tracking-tight">
                                 <span 
                                     onMouseEnter={handleNameMouseEnter}
                                     onMouseLeave={handleNameMouseLeave}
-                                    onClick={handleNameClick}
                                     style={{
                                         transform: isGlitching
                                             ? `translate(${glitchOffset.x}px, ${glitchOffset.y}px)`
                                             : undefined,
                                     }}
-                                    className={`gradient-text cursor-pointer relative inline-block transition-all duration-150 select-none ${
+                                    className={`gradient-text cursor-pointer relative inline-block whitespace-nowrap transition-all duration-150 select-none ${
                                         isGlitching ? 'skew-x-1' : ''
                                     } hover:scale-[1.02]`}
-                                    title="Hover or click to glitch morph"
+                                    title="Hover to reveal alias"
                                 >
                                     {displayName}
                                 </span>
@@ -315,7 +328,7 @@ export const HeroSection: React.FC = () => {
 
                         {/* Multiple Titles with TextRoll Animation */}
                         <motion.div
-                            className="text-xl sm:text-2xl md:text-3xl font-semibold min-h-[2.5rem] flex items-center justify-center md:justify-start cursor-pointer select-none"
+                            className="text-xl sm:text-2xl md:text-3xl font-semibold min-h-[2.5rem] flex items-center justify-center md:justify-start cursor-pointer select-none overflow-hidden whitespace-nowrap"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4 }}
@@ -330,7 +343,7 @@ export const HeroSection: React.FC = () => {
                                 duration={0.45}
                                 getEnterDelay={(i) => Math.min(i * 0.02, 0.4)}
                                 getExitDelay={(i) => Math.min(i * 0.02 + 0.03, 0.43)}
-                                className="inline-block text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                className="inline-block whitespace-nowrap text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                             >
                                 {titles[currentTitleIndex % titles.length] || profile.title || ''}
                             </TextRoll>
@@ -480,6 +493,10 @@ export const HeroSection: React.FC = () => {
                 >
                     <motion.a
                         href="#about"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
                         className="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                         animate={{ y: [0, 8, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}

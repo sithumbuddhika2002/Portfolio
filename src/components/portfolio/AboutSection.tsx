@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
+import type { Company } from '../../types/portfolio';
 import { 
     EnvelopeIcon, 
     PhoneIcon, 
@@ -8,13 +9,31 @@ import {
     SparklesIcon,
     CalendarIcon,
     DocumentDuplicateIcon,
-    CheckIcon
+    CheckIcon,
+    BuildingOffice2Icon,
+    ArrowTopRightOnSquareIcon,
+    ChevronRightIcon
 } from '@heroicons/react/24/outline';
 
 export const AboutSection: React.FC = () => {
     const { data } = usePortfolioData();
     const { profile } = data;
     const [copiedText, setCopiedText] = useState<string | null>(null);
+
+    // Get companies from data or fallback
+    const companies: Company[] = data.companies && data.companies.length > 0
+        ? data.companies
+        : (data.experience
+            ? data.experience.filter((e) => e.type === 'work').map((e) => ({
+                id: e.id,
+                name: e.company,
+                position: e.position,
+                logo: e.logo || '',
+                period: e.endDate === 'Present' ? 'Present' : `${e.startDate ? e.startDate.slice(0, 4) : ''} - ${e.endDate ? e.endDate.slice(0, 4) : ''}`,
+                current: e.endDate === 'Present',
+                url: e.url || '',
+              }))
+            : []);
 
     // Extract github username dynamically or use default
     const githubUsername = React.useMemo(() => {
@@ -52,135 +71,153 @@ export const AboutSection: React.FC = () => {
         },
     ];
 
-    const philosophyTags = [
-        { text: 'Clean Code', icon: '💻', color: 'from-sky-500/10 to-blue-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20' },
-        { text: 'UX/UI Design', icon: '🎨', color: 'from-fuchsia-500/10 to-pink-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500/20' },
-        { text: 'Problem Solving', icon: '⚡', color: 'from-amber-500/10 to-orange-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' },
-        { text: 'Pixel Perfection', icon: '📐', color: 'from-emerald-500/10 to-teal-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' },
-        { text: 'Fast Performance', icon: '🚀', color: 'from-rose-500/10 to-red-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' },
-        { text: 'Lifelong Learner', icon: '💡', color: 'from-indigo-500/10 to-violet-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20' }
-    ];
-
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.1,
-                delayChildren: 0.1
+                staggerChildren: 0.08,
+                delayChildren: 0.05
             }
         }
     };
 
     const itemVariants = {
-        hidden: { y: 30, opacity: 0 },
+        hidden: { y: 15, opacity: 0 },
         visible: {
             y: 0,
             opacity: 1,
             transition: {
-                duration: 0.6,
+                duration: 0.35,
                 ease: [0.16, 1, 0.3, 1] as const
             }
         }
     };
 
     return (
-        <section id="about" className="section-padding bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
-            {/* Glowing Decorative Background Blobs */}
-            <div className="absolute top-1/4 left-0 w-80 h-80 bg-primary-500/10 rounded-full filter blur-3xl -z-10 dark:bg-primary-900/10 pointer-events-none" />
-            <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-accent-500/10 rounded-full filter blur-3xl -z-10 dark:bg-accent-900/10 pointer-events-none" />
-
-            <div className="max-w-7xl mx-auto relative z-10">
+        <section 
+            id="about" 
+            className="section-padding bg-slate-50/70 dark:bg-gray-950/80 relative overflow-hidden py-16 sm:py-24 transform-gpu"
+        >
+            {/* Ambient Background & Texture Layer - Isolated with contain: strict (Zero Gaussian filter passes for 60/120fps scrolling) */}
+            <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden" style={{ contain: 'strict' }}>
+                <div 
+                    className="absolute top-10 left-[-10%] sm:left-4 w-72 h-72 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem] rounded-full pointer-events-none"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(14, 165, 233, 0.16) 0%, rgba(56, 189, 248, 0.06) 45%, transparent 70%)',
+                    }}
+                />
+                <div 
+                    className="absolute bottom-10 right-[-10%] sm:right-6 w-80 h-80 sm:w-[30rem] sm:h-[30rem] rounded-full pointer-events-none"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(217, 70, 239, 0.16) 0%, rgba(217, 70, 239, 0.05) 45%, transparent 70%)',
+                    }}
+                />
+                <div 
+                    className="absolute top-1/2 left-1/3 w-64 h-64 sm:w-80 sm:h-80 rounded-full pointer-events-none"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(99, 102, 241, 0.04) 45%, transparent 70%)',
+                    }}
+                />
                 
-                {/* Header */}
+                {/* Subtle dot matrix pattern */}
+                <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none" />
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                
+                {/* Section Header */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center mb-16"
+                    viewport={{ once: true, margin: "-40px" }}
+                    transition={{ duration: 0.5 }}
+                    className="text-center mb-12 sm:mb-16"
                 >
-                    <span className="text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent px-3 py-1 rounded-full bg-primary-500/5 border border-primary-500/10">
-                        Experience & Contributions
+                    <span className="glass-subtle text-[11px] sm:text-xs font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent border border-primary-500/20 shadow-xs inline-flex items-center gap-1.5">
+                        <SparklesIcon className="w-3.5 h-3.5 text-primary-500" />
+                        Experience & Background
                     </span>
-                    <h2 className="text-4xl md:text-5xl font-extrabold font-display mt-3 mb-4">
+                    <h2 className="text-3xl xs:text-4xl sm:text-5xl font-black font-display mt-3.5 mb-3.5 tracking-tight">
                         About <span className="gradient-text">Me</span>
                     </h2>
-                    <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                        Get to know my experience, core principles, and my active open-source contributions.
+                    <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-2 leading-relaxed">
+                        Get to know my experience, companies I work with, and my active open-source contributions.
                     </p>
                 </motion.div>
 
-                {/* Grid Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                {/* Main Responsive Grid Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-start">
                     
-                    {/* Visual/Image Side */}
+                    {/* Visual / Image Side */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.96 }}
                         whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                        className="lg:col-span-5 flex flex-col items-center"
+                        viewport={{ once: true, margin: "-40px" }}
+                        transition={{ duration: 0.55 }}
+                        className="lg:col-span-5 flex flex-col items-center w-full transform-gpu"
                     >
-                        <div className="relative group cursor-pointer w-full max-w-sm">
-                            {/* Slow gradient glow ring behind the image */}
-                            <div className="absolute -inset-2 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl opacity-20 blur-xl group-hover:opacity-40 transition duration-500 animate-pulse" />
+                        <div className="relative group w-full max-w-xs sm:max-w-sm lg:max-w-md mx-auto">
+                            {/* Ambient gradient glow aura */}
+                            <div 
+                                className="absolute -inset-2 rounded-3xl opacity-25 group-hover:opacity-40 transition duration-500 pointer-events-none" 
+                                style={{
+                                    background: 'radial-gradient(ellipse at center, rgba(14, 165, 233, 0.35) 0%, rgba(217, 70, 239, 0.25) 45%, rgba(99, 102, 241, 0.15) 65%, transparent 80%)',
+                                }}
+                            />
                             
-                            {/* Main Image Container */}
+                            {/* Glassmorphic Image Frame */}
                             <motion.div 
-                                whileHover={{ scale: 1.02, rotateY: 5, rotateX: -5 }}
-                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl bg-white dark:bg-gray-900"
+                                whileHover={{ scale: 1.015 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                                className="glass-card p-2 sm:p-2.5 rounded-3xl relative overflow-hidden group border border-white/60 dark:border-white/10 shadow-2xl backdrop-blur-md transform-gpu"
                             >
-                                <img
-                                    src={profile.aboutImage || profile.image}
-                                    alt={profile.name}
-                                    className="w-full object-cover aspect-[4/5] object-center transition-transform duration-500 group-hover:scale-105"
-                                />
+                                {/* Top glass specular light reflection */}
+                                <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/35 dark:from-white/10 to-transparent pointer-events-none rounded-t-2xl z-10" />
 
-                                {/* Pulse green dot available badge */}
-                                <div className="absolute bottom-4 left-4 glass px-4 py-2 rounded-xl flex items-center gap-2 border border-white/20 dark:border-gray-700/30 shadow-lg backdrop-blur-md">
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                    </span>
-                                    <span className="text-[10px] sm:text-xs font-semibold text-gray-800 dark:text-gray-200">
-                                        Open to Opportunities
-                                    </span>
+                                <div className="relative overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-900">
+                                    <img
+                                        src={profile.aboutImage || profile.image}
+                                        alt={profile.name}
+                                        className="w-full object-cover aspect-[4/5] object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                                        loading="lazy"
+                                    />
                                 </div>
                             </motion.div>
                         </div>
                     </motion.div>
 
-                    {/* Content/Bento Grid Side */}
+                    {/* Content / Bento Grid Side */}
                     <motion.div
                         variants={containerVariants}
                         initial="hidden"
                         whileInView="visible"
-                        viewport={{ once: true }}
-                        className="lg:col-span-7 space-y-6"
+                        viewport={{ once: true, margin: "-40px" }}
+                        className="lg:col-span-7 space-y-5 sm:space-y-6 w-full transform-gpu"
                     >
-                        {/* Experience Cards Row */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {/* Experience Highlights Row */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                            
                             {/* Field Experience Card */}
                             <motion.div 
                                 variants={itemVariants}
-                                whileHover={{ y: -4 }}
-                                className="glass p-6 rounded-2xl border border-white/10 dark:border-gray-900/30 shadow-md relative overflow-hidden group"
+                                whileHover={{ y: -3 }}
+                                className="glass-card p-5 sm:p-6 rounded-2xl relative overflow-hidden group transition-all duration-300 hover:border-primary-500/40 transform-gpu"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                                <div className="flex items-start space-x-4">
-                                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary-500/10 flex items-center justify-center border border-primary-500/20 dark:bg-primary-950/20 dark:border-primary-900/30">
-                                        <SparklesIcon className="w-6 h-6 text-primary-500" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent dark:from-white/10 dark:via-transparent dark:to-transparent opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                
+                                <div className="flex items-start space-x-3.5 sm:space-x-4 relative z-10">
+                                    <div className="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl glass-subtle flex items-center justify-center border border-primary-500/30 dark:border-primary-500/20 text-primary-600 dark:text-primary-400 shadow-xs group-hover:scale-105 transition-transform">
+                                        <SparklesIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                                     </div>
                                     <div>
-                                        <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                        <h4 className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Field Experience
                                         </h4>
-                                        <p className="text-3xl font-extrabold font-display text-gray-900 dark:text-gray-100 mt-1">
+                                        <p className="text-2xl sm:text-3xl font-extrabold font-display gradient-text mt-0.5 sm:mt-1">
                                             4+ Years
                                         </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 leading-relaxed font-medium">
+                                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed font-normal sm:font-medium">
                                             Designing interfaces, building open-source projects, and full-stack software development.
                                         </p>
                                     </div>
@@ -190,22 +227,23 @@ export const AboutSection: React.FC = () => {
                             {/* Career Experience Card */}
                             <motion.div 
                                 variants={itemVariants}
-                                whileHover={{ y: -4 }}
-                                className="glass p-6 rounded-2xl border border-white/10 dark:border-gray-900/30 shadow-md relative overflow-hidden group"
+                                whileHover={{ y: -3 }}
+                                className="glass-card p-5 sm:p-6 rounded-2xl relative overflow-hidden group transition-all duration-300 hover:border-accent-500/40 transform-gpu"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-accent-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                                <div className="flex items-start space-x-4">
-                                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-accent-500/10 flex items-center justify-center border border-accent-500/20 dark:bg-accent-950/20 dark:border-accent-900/30">
-                                        <CalendarIcon className="w-6 h-6 text-accent-500" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent dark:from-white/10 dark:via-transparent dark:to-transparent opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                
+                                <div className="flex items-start space-x-3.5 sm:space-x-4 relative z-10">
+                                    <div className="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl glass-subtle flex items-center justify-center border border-accent-500/30 dark:border-accent-500/20 text-accent-600 dark:text-accent-400 shadow-xs group-hover:scale-105 transition-transform">
+                                        <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                                     </div>
                                     <div>
-                                        <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                        <h4 className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Career Experience
                                         </h4>
-                                        <p className="text-3xl font-extrabold font-display text-gray-900 dark:text-gray-100 mt-1">
+                                        <p className="text-2xl sm:text-3xl font-extrabold font-display gradient-text mt-0.5 sm:mt-1">
                                             1+ Years
                                         </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 leading-relaxed font-medium">
+                                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed font-normal sm:font-medium">
                                             Working in structured professional industry environments, collaborating on production codebases.
                                         </p>
                                     </div>
@@ -216,17 +254,19 @@ export const AboutSection: React.FC = () => {
                         {/* GitHub Contributions Graph Card */}
                         <motion.div 
                             variants={itemVariants}
-                            whileHover={{ y: -4 }}
-                            className="glass p-6 rounded-2xl border border-white/10 dark:border-gray-900/30 shadow-md relative overflow-hidden group"
+                            whileHover={{ y: -2 }}
+                            className="glass-card p-5 sm:p-6 rounded-2xl relative overflow-hidden group transition-all duration-300 hover:border-primary-500/40 transform-gpu"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent dark:from-white/10 dark:via-transparent dark:to-transparent opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none" />
                             
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center justify-between mb-3.5 relative z-10">
                                 <div className="flex items-center space-x-2.5">
-                                    <svg className="w-5 h-5 text-gray-800 dark:text-gray-200" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-                                    </svg>
-                                    <h4 className="text-sm font-bold uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                                    <div className="w-7 h-7 rounded-lg glass-subtle flex items-center justify-center text-gray-800 dark:text-gray-200">
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                                        </svg>
+                                    </div>
+                                    <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-800 dark:text-gray-200">
                                         GitHub Contributions
                                     </h4>
                                 </div>
@@ -234,87 +274,183 @@ export const AboutSection: React.FC = () => {
                                     href={`https://github.com/${githubUsername}`} 
                                     target="_blank" 
                                     rel="noreferrer"
-                                    className="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline transition-colors"
+                                    className="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline transition-colors flex items-center gap-1"
                                 >
                                     @{githubUsername}
+                                    <ChevronRightIcon className="w-3 h-3" />
                                 </a>
                             </div>
 
-                            {/* GitHub contributions calendar graph image */}
-                            <div className="w-full bg-white/40 dark:bg-gray-900/40 rounded-xl p-4 border border-gray-200/50 dark:border-gray-800/50 flex items-center justify-center overflow-x-auto">
-                                <img
-                                    src={`https://ghchart.rshah.org/0ea5e9/${githubUsername}`}
-                                    alt={`${githubUsername}'s GitHub Contributions`}
-                                    className="w-full h-auto min-w-[550px] object-contain select-none dark:brightness-95 dark:contrast-110"
-                                />
+                            {/* GitHub contributions calendar graph image with glass enclosure */}
+                            <div className="w-full glass-subtle rounded-xl p-3 sm:p-4 border border-white/50 dark:border-white/5 overflow-hidden flex flex-col items-center">
+                                <div className="w-full overflow-x-auto scrollbar-thin pb-1">
+                                    <img
+                                        src={`https://ghchart.rshah.org/0ea5e9/${githubUsername}`}
+                                        alt={`${githubUsername}'s GitHub Contributions`}
+                                        className="w-full h-auto min-w-[500px] sm:min-w-[550px] object-contain select-none dark:opacity-95"
+                                        loading="lazy"
+                                    />
+                                </div>
+                                {/* Mobile swipe hint */}
+                                <div className="flex sm:hidden items-center justify-between w-full mt-2 pt-2 border-t border-gray-200/40 dark:border-gray-800/40 text-[10px] text-gray-400">
+                                    <span>← Swipe to explore graph →</span>
+                                    <span>Live commits</span>
+                                </div>
                             </div>
                         </motion.div>
 
-                        {/* Bento Details Split Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        {/* Bento Split Grid: Connectivity & Companies */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start">
                             
-                            {/* Contact Details Card */}
-                            <motion.div variants={itemVariants} className="glass md:col-span-6 p-6 rounded-2xl border border-white/10 dark:border-gray-900/30 shadow-md flex flex-col justify-between">
-                                <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">
-                                    Connectivity
-                                </h4>
-                                <div className="space-y-4">
-                                    {highlights.map((item, index) => (
-                                        <div key={index} className="flex items-center space-x-3 group/item">
-                                            <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200/50 dark:border-gray-700/50">
-                                                <item.icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider">
-                                                    {item.label}
-                                                </p>
-                                                {item.href ? (
-                                                    <a
-                                                        href={item.href}
-                                                        className="text-sm sm:text-base font-bold text-gray-800 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors break-all"
+                            {/* Contact Details Card (Clean - categories aligned at the top directly under Connectivity) */}
+                            <motion.div 
+                                variants={itemVariants} 
+                                className="glass-card p-5 sm:p-6 rounded-2xl relative overflow-hidden flex flex-col justify-start transform-gpu"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent dark:from-white/10 dark:via-transparent dark:to-transparent opacity-60 pointer-events-none" />
+
+                                <div className="relative z-10 flex flex-col justify-start">
+                                    <div className="mb-4">
+                                        <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                            Connectivity
+                                        </h4>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {highlights.map((item, index) => (
+                                            <div 
+                                                key={index} 
+                                                className="glass-subtle p-2.5 sm:p-3 rounded-xl border border-black/[0.04] dark:border-white/[0.06] hover:border-primary-500/40 transition-all duration-200 flex items-center justify-between gap-3 group/item"
+                                            >
+                                                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                                                    <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-white/80 dark:bg-gray-800/80 border border-black/[0.04] dark:border-white/[0.08] flex items-center justify-center text-primary-500 shadow-xs">
+                                                        <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary-500" />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider">
+                                                            {item.label}
+                                                        </p>
+                                                        {item.href ? (
+                                                            <a
+                                                                href={item.href}
+                                                                className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors truncate block"
+                                                            >
+                                                                {item.value}
+                                                            </a>
+                                                        ) : (
+                                                            <p className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 truncate">
+                                                                {item.value}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {item.copyable && (
+                                                    <button
+                                                        onClick={() => handleCopy(item.value, item.label)}
+                                                        className="w-8 h-8 rounded-lg glass-subtle hover:bg-white dark:hover:bg-gray-800 flex items-center justify-center shrink-0 opacity-100 sm:opacity-0 sm:group-hover/item:opacity-100 transition-all duration-200 border border-black/[0.04] dark:border-white/[0.08] active:scale-95"
+                                                        title={`Copy ${item.label}`}
+                                                        aria-label={`Copy ${item.label}`}
                                                     >
-                                                        {item.value}
-                                                    </a>
-                                                ) : (
-                                                    <p className="text-sm sm:text-base font-bold text-gray-800 dark:text-gray-200">
-                                                        {item.value}
-                                                    </p>
+                                                        {copiedText === item.label ? (
+                                                            <CheckIcon className="w-4 h-4 text-emerald-500" />
+                                                        ) : (
+                                                            <DocumentDuplicateIcon className="w-4 h-4 text-gray-400" />
+                                                        )}
+                                                    </button>
                                                 )}
                                             </div>
-                                            {item.copyable && (
-                                                <button
-                                                    onClick={() => handleCopy(item.value, item.label)}
-                                                    className="w-8 h-8 rounded-md bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 border border-gray-200/40 dark:border-gray-800"
-                                                    title={`Copy ${item.label}`}
-                                                >
-                                                    {copiedText === item.label ? (
-                                                        <CheckIcon className="w-4 h-4 text-emerald-500" />
-                                                    ) : (
-                                                        <DocumentDuplicateIcon className="w-4 h-4 text-gray-400" />
-                                                    )}
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </motion.div>
 
-                            {/* Philosophy Tags Card */}
-                            <motion.div variants={itemVariants} className="glass md:col-span-6 p-6 rounded-2xl border border-white/10 dark:border-gray-900/30 shadow-md">
-                                <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">
-                                    Philosophy
-                                </h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {philosophyTags.map((tag, index) => (
-                                        <motion.span
-                                            key={index}
-                                            whileHover={{ scale: 1.05 }}
-                                            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border bg-gradient-to-r ${tag.color} flex items-center gap-1.5 shadow-sm transition-all duration-300`}
-                                        >
-                                            <span>{tag.icon}</span>
-                                            <span>{tag.text}</span>
-                                        </motion.span>
-                                    ))}
+                            {/* Companies & Roles Card (Clean - removed Workplaces pill, shows ALL companies without inner scrollbar) */}
+                            <motion.div 
+                                variants={itemVariants} 
+                                className="glass-card p-5 sm:p-6 rounded-2xl relative overflow-hidden flex flex-col justify-start transform-gpu"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent dark:from-white/10 dark:via-transparent dark:to-transparent opacity-60 pointer-events-none" />
+
+                                <div className="relative z-10 flex flex-col justify-start">
+                                    <div className="mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <BuildingOffice2Icon className="w-4 h-4 text-primary-500" />
+                                            <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                Companies & Roles
+                                            </h4>
+                                        </div>
+                                    </div>
+
+                                    {/* All companies visible without cut-offs or inner scrollbars */}
+                                    <div className="space-y-2.5 sm:space-y-3">
+                                        {companies.length === 0 ? (
+                                            <div className="text-center py-6 text-gray-400 dark:text-gray-500 text-xs">
+                                                No companies added yet.
+                                            </div>
+                                        ) : (
+                                            companies.map((company) => (
+                                                <div
+                                                    key={company.id}
+                                                    className="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl glass-subtle hover:bg-white/70 dark:hover:bg-gray-800/60 border border-black/[0.04] dark:border-white/[0.06] hover:border-primary-500/40 transition-all duration-200 gap-3"
+                                                >
+                                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                        {/* Company Logo Container */}
+                                                        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white dark:bg-gray-800/90 border border-black/[0.04] dark:border-white/[0.08] p-1.5 flex items-center justify-center shrink-0 shadow-xs overflow-hidden group-hover:scale-105 transition-transform">
+                                                            {company.logo ? (
+                                                                <img
+                                                                    src={company.logo}
+                                                                    alt={company.name}
+                                                                    className="w-full h-full object-contain"
+                                                                    onError={(e) => {
+                                                                        (e.target as HTMLElement).style.display = 'none';
+                                                                        e.currentTarget.parentElement?.classList.add('bg-primary-500/10');
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <span className="text-xs font-bold text-primary-600 dark:text-primary-400 font-display">
+                                                                    {company.name ? company.name.substring(0, 2).toUpperCase() : 'CO'}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Details: Position & Company Name */}
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                                <h5 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                                                    {company.position}
+                                                                </h5>
+                                                                {company.current && (
+                                                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                                        Current
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                                {company.name}
+                                                                {company.period ? ` • ${company.period}` : ''}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Company Link */}
+                                                    {company.url && (
+                                                        <a
+                                                            href={company.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="w-8 h-8 rounded-lg glass-subtle hover:bg-white dark:hover:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors shrink-0 border border-black/[0.04] dark:border-white/[0.08]"
+                                                            title={`Visit ${company.name}`}
+                                                            aria-label={`Visit ${company.name}`}
+                                                        >
+                                                            <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
                                 </div>
                             </motion.div>
 
@@ -328,5 +464,3 @@ export const AboutSection: React.FC = () => {
         </section>
     );
 };
-
-

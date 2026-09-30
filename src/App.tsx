@@ -9,6 +9,7 @@ import { ProfileEditor } from './pages/admin/ProfileEditor';
 import { SkillsEditor } from './pages/admin/SkillsEditor';
 import { ProjectsEditor } from './pages/admin/ProjectsEditor';
 import { ExperienceEditor } from './pages/admin/ExperienceEditor';
+import { CompaniesEditor } from './pages/admin/CompaniesEditor';
 import { SettingsEditor } from './pages/admin/SettingsEditor';
 import { SeasonalManager } from './components/animations/SeasonalManager';
 
@@ -28,6 +29,7 @@ function App() {
               <Route path="/admin/dashboard" element={<Dashboard />}>
                 <Route index element={<Navigate to="/admin/dashboard/profile" replace />} />
                 <Route path="profile" element={<ProfileEditor />} />
+                <Route path="companies" element={<CompaniesEditor />} />
                 <Route path="skills" element={<SkillsEditor />} />
                 <Route path="projects" element={<ProjectsEditor />} />
                 <Route path="experience" element={<ExperienceEditor />} />

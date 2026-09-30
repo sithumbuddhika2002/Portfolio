@@ -16,7 +16,14 @@ export const firebaseStorage = {
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                return docSnap.data() as PortfolioData;
+                const firestoreData = docSnap.data() as PortfolioData;
+                return {
+                    ...initialData,
+                    ...firestoreData,
+                    companies: firestoreData.companies && firestoreData.companies.length > 0
+                        ? firestoreData.companies
+                        : (initialData.companies || []),
+                };
             } else {
                 // Initialize with default data if not exists
                 await firebaseStorage.setData(initialData);
@@ -79,7 +86,14 @@ export const firebaseStorage = {
 
         return onSnapshot(docRef, (doc) => {
             if (doc.exists()) {
-                callback(doc.data() as PortfolioData);
+                const firestoreData = doc.data() as PortfolioData;
+                callback({
+                    ...initialData,
+                    ...firestoreData,
+                    companies: firestoreData.companies && firestoreData.companies.length > 0
+                        ? firestoreData.companies
+                        : (initialData.companies || []),
+                });
             }
         }, (error) => {
             console.error('Error listening to Firestore changes:', error);
