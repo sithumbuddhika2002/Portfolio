@@ -43,6 +43,8 @@ export interface Skill {
     icon?: string;
 }
 
+export type ProjectCategory = 'Personal Projects' | 'University Projects' | 'Corporate Projects' | string;
+
 export interface Project {
     id: string;
     title: string;
@@ -53,7 +55,7 @@ export interface Project {
     liveUrl?: string;
     githubUrl?: string;
     featured: boolean;
-    category: string;
+    category: ProjectCategory;
     date: string;
 }
 

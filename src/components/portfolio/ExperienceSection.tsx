@@ -91,9 +91,21 @@ export const ExperienceSection: React.FC = () => {
             className="section-padding bg-gray-50/20 dark:bg-gray-950/20 relative overflow-hidden" 
             ref={sectionRef}
         >
-            {/* Background decorative glowing orbs */}
-            <div className="absolute top-1/4 left-0 w-80 h-80 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-accent-500/5 dark:bg-accent-500/10 rounded-full blur-3xl pointer-events-none" />
+            {/* Background decorative glowing orbs - Isolated with contain: strict (Zero filter blur overhead) */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ contain: 'strict' }}>
+                <div 
+                    className="absolute top-1/4 left-0 w-80 h-80 sm:w-96 sm:h-96 rounded-full pointer-events-none"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(14, 165, 233, 0.10) 0%, rgba(14, 165, 233, 0.02) 50%, transparent 70%)',
+                    }}
+                />
+                <div 
+                    className="absolute bottom-1/4 right-0 w-80 h-80 sm:w-96 sm:h-96 rounded-full pointer-events-none"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(217, 70, 239, 0.10) 0%, rgba(217, 70, 239, 0.02) 50%, transparent 70%)',
+                    }}
+                />
+            </div>
 
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Header */}

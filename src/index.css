@@ -9,6 +9,7 @@
   }
 
   html {
+    scroll-behavior: smooth;
     overflow-x: hidden;
   }
 
@@ -128,3 +129,143 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* 3D Wall Switch for Slingshot Lamp */
+.switch-box {
+  width: 68px;
+  height: 114px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, #2a2c30, #17181a 60%, #101112);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 12px 28px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  outline: none;
+  transform-origin: center center;
+  transition: transform 0.1s ease;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .switch-box {
+    width: 56px;
+    height: 94px;
+    border-radius: 10px;
+  }
+}
+
+.switch-box:focus-visible {
+  box-shadow: 0 0 0 2px rgba(243, 201, 143, 0.7), 0 12px 28px rgba(0, 0, 0, 0.6);
+}
+
+.switch-box.knock {
+  animation: switchKnock 0.32s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
+@keyframes switchKnock {
+  0% { transform: translate(var(--kx, 0), var(--ky, 0)) rotate(var(--kr, 0deg)); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.switch-box .screw {
+  position: absolute;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #6d6f73, #292a2c 70%);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+.switch-box .screw::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: 2.5px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.7);
+  transform: rotate(35deg);
+}
+.switch-box .screw.top { top: 8px; }
+.switch-box .screw.bot { bottom: 8px; }
+
+.switch-slot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 48px;
+  margin: -24px 0 0 -12px;
+  border-radius: 5px;
+  background: linear-gradient(#070708, #0e0f10);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.95), 0 1px 0 rgba(255, 255, 255, 0.08);
+  perspective: 120px;
+}
+
+@media (max-width: 640px) {
+  .switch-slot {
+    width: 20px;
+    height: 40px;
+    margin: -20px 0 0 -10px;
+  }
+}
+
+.switch-lever {
+  position: absolute;
+  left: 2.5px;
+  right: 2.5px;
+  top: 2.5px;
+  bottom: 2.5px;
+  border-radius: 3px;
+  transition: transform 0.14s cubic-bezier(0.3, 1.6, 0.5, 1);
+  transform-origin: 50% 50%;
+  transform: rotateX(-26deg);
+  background: linear-gradient(#9d9b97 0%, #dedad2 38%, #8e8b86 52%, #555350 100%);
+  box-shadow: 0 5px 6px rgba(0, 0, 0, 0.65);
+}
+
+.switch-box[aria-checked="false"] .switch-lever {
+  transform: rotateX(26deg);
+  background: linear-gradient(#4d4b48 0%, #86837e 48%, #d2cec6 64%, #989590 100%);
+  box-shadow: 0 -5px 6px rgba(0, 0, 0, 0.65);
+}
+
+.switch-box .engraved {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7.5px;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
+.switch-box .engraved.on { top: 18px; }
+.switch-box .engraved.off { bottom: 18px; }
+
+@media (max-width: 640px) {
+  .switch-box .engraved.on { top: 15px; }
+  .switch-box .engraved.off { bottom: 15px; }
+}
+
+.pilot-led {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 4.5px;
+  height: 4.5px;
+  margin-top: -2.25px;
+  border-radius: 50%;
+  background: #3a2a1a;
+  transition: background 0.2s, box-shadow 0.2s;
+  pointer-events: none;
+}
+
+.switch-box[aria-checked="true"] .pilot-led {
+  background: #ffb45a;
+  box-shadow: 0 0 7px 2px rgba(255, 170, 80, 0.85);
+}

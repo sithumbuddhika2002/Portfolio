@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import type { Company } from '../../types/portfolio';
+import { SlingshotLampOverlay } from './SlingshotLampOverlay';
 import { 
     EnvelopeIcon, 
     PhoneIcon, 
@@ -19,6 +20,7 @@ export const AboutSection: React.FC = () => {
     const { data } = usePortfolioData();
     const { profile } = data;
     const [copiedText, setCopiedText] = useState<string | null>(null);
+    const sectionRef = useRef<HTMLDivElement>(null);
 
     // Get companies from data or fallback
     const companies: Company[] = data.companies && data.companies.length > 0
@@ -96,9 +98,13 @@ export const AboutSection: React.FC = () => {
 
     return (
         <section 
+            ref={sectionRef}
             id="about" 
             className="section-padding bg-slate-50/70 dark:bg-gray-950/80 relative overflow-hidden py-16 sm:py-24 transform-gpu"
         >
+            {/* Interactive Slingshot Lamp Overlay & Physics Simulation */}
+            <SlingshotLampOverlay containerRef={sectionRef} />
+
             {/* Ambient Background & Texture Layer - Isolated with contain: strict (Zero Gaussian filter passes for 60/120fps scrolling) */}
             <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden" style={{ contain: 'strict' }}>
                 <div 
@@ -132,13 +138,9 @@ export const AboutSection: React.FC = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-40px" }}
                     transition={{ duration: 0.5 }}
-                    className="text-center mb-12 sm:mb-16"
+                    className="text-center mb-12 sm:mb-16 pt-16 sm:pt-24"
                 >
-                    <span className="glass-subtle text-[11px] sm:text-xs font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent border border-primary-500/20 shadow-xs inline-flex items-center gap-1.5">
-                        <SparklesIcon className="w-3.5 h-3.5 text-primary-500" />
-                        Experience & Background
-                    </span>
-                    <h2 className="text-3xl xs:text-4xl sm:text-5xl font-black font-display mt-3.5 mb-3.5 tracking-tight">
+                    <h2 className="text-3xl xs:text-4xl sm:text-5xl font-black font-display mb-3.5 tracking-tight">
                         About <span className="gradient-text">Me</span>
                     </h2>
                     <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-2 leading-relaxed">

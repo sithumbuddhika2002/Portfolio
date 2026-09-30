@@ -82,6 +82,29 @@ export const HeroSection: React.FC = () => {
         };
     }, []);
 
+    // Optimize performance: pause video playback when Hero is scrolled out of view
+    useEffect(() => {
+        const heroEl = heroRef.current;
+        const videoEl = videoRef.current;
+        if (!heroEl || !videoEl) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    if (isPlaying) {
+                        videoEl.play().catch(() => {});
+                    }
+                } else {
+                    videoEl.pause();
+                }
+            },
+            { threshold: 0 }
+        );
+
+        observer.observe(heroEl);
+        return () => observer.disconnect();
+    }, [isPlaying]);
+
     const triggerGlitchScramble = (target: 'alias' | 'original') => {
         if (scrambleTimerRef.current) {
             clearInterval(scrambleTimerRef.current);
@@ -402,8 +425,13 @@ export const HeroSection: React.FC = () => {
                             onMouseLeave={handleVideoMouseLeave}
                             className="relative group w-[260px] xs:w-[285px] sm:w-[325px] md:w-[325px] lg:w-[370px] xl:w-[410px] aspect-[9/16] max-h-[62vh] md:max-h-[580px] lg:max-h-[640px] select-none"
                         >
-                            {/* Ambient Aura Halo emanates from behind the video */}
-                            <div className="absolute -inset-4 sm:-inset-6 bg-gradient-to-tr from-primary-500/25 via-sky-400/15 to-indigo-500/20 rounded-full filter blur-2xl sm:blur-3xl -z-10 opacity-60 group-hover:opacity-90 transition-opacity duration-500 pointer-events-none" />
+                            {/* Ambient Aura Halo emanates from behind the video - Pure radial gradient (Zero filter blur overhead) */}
+                            <div 
+                                className="absolute -inset-6 sm:-inset-8 rounded-full -z-10 opacity-60 group-hover:opacity-90 transition-opacity duration-500 pointer-events-none"
+                                style={{
+                                    background: 'radial-gradient(circle, rgba(14, 165, 233, 0.22) 0%, rgba(99, 102, 241, 0.12) 45%, transparent 70%)',
+                                }}
+                            />
 
                             {/* Main Video Presentation - Frameless with Seamless Edge Feathering */}
                             <div
