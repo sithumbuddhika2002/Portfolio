@@ -333,7 +333,7 @@ export const initialData: PortfolioData = {
             username: 'sithum',
             password: 'Sithum0213',
         },
-        season: 'christmas',
+        season: 'none',
         cloudinary: {
             cloudName: 'il2hd5tl',
             apiKey: '399392719424744',

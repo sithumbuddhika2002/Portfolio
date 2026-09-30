@@ -21,16 +21,27 @@ export const HeroSection: React.FC = () => {
     const [showPlayPauseFeedback, setShowPlayPauseFeedback] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const heroRef = useRef<HTMLElement>(null);
+    const userPausedRef = useRef(false);
 
-    // Interactive mouse spotlight position across hero section (using ref to avoid re-rendering entire component)
+    // Interactive mouse spotlight position across hero section (using rAF to avoid layout thrashing)
     const spotlightRef = useRef<HTMLDivElement>(null);
+    const isHeroMovingRef = useRef(false);
 
     const handleHeroMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-        if (!spotlightRef.current) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        spotlightRef.current.style.background = `radial-gradient(750px circle at ${x}px ${y}px, rgba(14, 165, 233, 0.1), rgba(99, 102, 241, 0.04), transparent 70%)`;
+        if (!spotlightRef.current || isHeroMovingRef.current) return;
+        isHeroMovingRef.current = true;
+        const clientX = e.clientX;
+        const clientY = e.clientY;
+        const currentTarget = e.currentTarget;
+        requestAnimationFrame(() => {
+            if (spotlightRef.current && currentTarget) {
+                const rect = currentTarget.getBoundingClientRect();
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+                spotlightRef.current.style.background = `radial-gradient(750px circle at ${x}px ${y}px, rgba(14, 165, 233, 0.1), rgba(99, 102, 241, 0.04), transparent 70%)`;
+            }
+            isHeroMovingRef.current = false;
+        });
     };
 
     // 3D perspective spring tilt for video container
@@ -43,14 +54,23 @@ export const HeroSection: React.FC = () => {
     const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ['6deg', '-6deg']);
     const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ['-6deg', '6deg']);
 
+    const isVideoMovingRef = useRef(false);
     const handleVideoMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const width = rect.width;
-        const height = rect.height;
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        x.set(mouseX / width - 0.5);
-        y.set(mouseY / height - 0.5);
+        if (isVideoMovingRef.current) return;
+        isVideoMovingRef.current = true;
+        const clientX = e.clientX;
+        const clientY = e.clientY;
+        const currentTarget = e.currentTarget;
+        requestAnimationFrame(() => {
+            if (currentTarget) {
+                const rect = currentTarget.getBoundingClientRect();
+                const width = rect.width;
+                const height = rect.height;
+                x.set((clientX - rect.left) / width - 0.5);
+                y.set((clientY - rect.top) / height - 0.5);
+            }
+            isVideoMovingRef.current = false;
+        });
     };
 
     const handleVideoMouseLeave = () => {
@@ -82,7 +102,7 @@ export const HeroSection: React.FC = () => {
         };
     }, []);
 
-    // Optimize performance: pause video playback when Hero is scrolled out of view
+    // Optimize performance: pause video playback when Hero is scrolled out of view, resume when visible
     useEffect(() => {
         const heroEl = heroRef.current;
         const videoEl = videoRef.current;
@@ -91,19 +111,19 @@ export const HeroSection: React.FC = () => {
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
-                    if (isPlaying) {
+                    if (!userPausedRef.current) {
                         videoEl.play().catch(() => {});
                     }
                 } else {
                     videoEl.pause();
                 }
             },
-            { threshold: 0 }
+            { threshold: 0.1 }
         );
 
         observer.observe(heroEl);
         return () => observer.disconnect();
-    }, [isPlaying]);
+    }, []);
 
     const triggerGlitchScramble = (target: 'alias' | 'original') => {
         if (scrambleTimerRef.current) {
@@ -203,6 +223,7 @@ export const HeroSection: React.FC = () => {
         if (!video) return;
 
         video.muted = true;
+        video.defaultMuted = true;
         const playPromise = video.play();
         if (playPromise !== undefined) {
             playPromise
@@ -215,20 +236,17 @@ export const HeroSection: React.FC = () => {
     }, []);
 
     const togglePlay = () => {
-        if (!videoRef.current) return;
-        if (videoRef.current.ended) {
-            videoRef.current.currentTime = 0;
-            videoRef.current.play().then(() => {
-                setIsPlaying(true);
-                triggerFeedback();
-            }).catch(() => {});
-        } else if (videoRef.current.paused) {
-            videoRef.current.play().then(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        if (video.paused || video.ended) {
+            userPausedRef.current = false;
+            video.play().then(() => {
                 setIsPlaying(true);
                 triggerFeedback();
             }).catch(() => {});
         } else {
-            videoRef.current.pause();
+            userPausedRef.current = true;
+            video.pause();
             setIsPlaying(false);
             triggerFeedback();
         }
@@ -436,31 +454,28 @@ export const HeroSection: React.FC = () => {
                             {/* Main Video Presentation - Frameless with Seamless Edge Feathering */}
                             <div
                                 onClick={togglePlay}
-                                className="relative w-full h-full overflow-hidden cursor-pointer rounded-2xl"
-                                style={{
-                                    WebkitMaskImage: 'radial-gradient(ellipse 94% 94% at 50% 50%, black 65%, rgba(0,0,0,0.85) 82%, transparent 100%)',
-                                    maskImage: 'radial-gradient(ellipse 94% 94% at 50% 50%, black 65%, rgba(0,0,0,0.85) 82%, transparent 100%)',
-                                }}
+                                className="relative w-full h-full overflow-hidden cursor-pointer rounded-2xl transform-gpu [backface-visibility:hidden]"
                             >
                                 <video
                                     ref={videoRef}
                                     autoPlay
+                                    loop
                                     muted
                                     playsInline
-                                    preload="auto"
+                                    preload="metadata"
                                     poster="/hero-poster.webp"
-                                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                                    className="w-full h-full object-cover rounded-2xl transform-gpu [backface-visibility:hidden]"
                                     onPlay={() => setIsPlaying(true)}
                                     onPause={() => setIsPlaying(false)}
-                                    onEnded={() => setIsPlaying(false)}
                                 >
+                                    <source src="/hero.webm" type="video/webm" />
                                     <source src="/hero.mp4" type="video/mp4" />
-                                    <source src="/videos/hero.mp4" type="video/mp4" />
                                     {/* Fallback image */}
                                     <img
                                         src={profile.image}
                                         alt={profile.name}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover rounded-2xl"
+                                        loading="lazy"
                                     />
                                 </video>
 
@@ -483,7 +498,7 @@ export const HeroSection: React.FC = () => {
                                         exit={{ scale: 0.8, opacity: 0 }}
                                         className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
                                     >
-                                        <div className="p-4 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white shadow-2xl">
+                                        <div className="p-4 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 text-white shadow-2xl">
                                             {isPlaying ? (
                                                 <PlayIcon className="w-8 h-8 translate-x-0.5 text-primary-400" />
                                             ) : (
@@ -496,7 +511,7 @@ export const HeroSection: React.FC = () => {
 
                             {/* Floating Interactive Experience / Role Badge */}
                             <motion.div
-                                className="absolute bottom-6 -left-4 sm:bottom-8 sm:-left-6 z-20 hidden xs:flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl border border-gray-200/50 dark:border-white/15 text-gray-800 dark:text-gray-100 text-xs font-medium shadow-xl hover:scale-105 hover:border-primary-500/50 transition-all duration-300 group/badge"
+                                className="absolute bottom-6 -left-4 sm:bottom-8 sm:-left-6 z-20 hidden xs:flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200/50 dark:border-white/15 text-gray-800 dark:text-gray-100 text-xs font-medium shadow-xl hover:scale-105 hover:border-primary-500/50 transition-all duration-300 group/badge transform-gpu"
                                 style={{ transform: 'translateZ(40px)' }}
                                 whileHover={{ y: -3 }}
                             >

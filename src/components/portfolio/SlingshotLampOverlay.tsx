@@ -36,7 +36,7 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
         W: 0,
         H: 0,
         DPR: 1,
-        lamp: { ax: 0, ay: 0, len: 55, theta: 0.04, omega: 0 },
+        lamp: { ax: 0, ay: 0, len: 55, theta: 0, omega: 0 },
         light: { on: true, I: 1, fil: 1, heat: 0, warm: 0, popT: 0, broken: false, flash: 0 },
         sling: {
             x: 100,
@@ -278,12 +278,6 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        const glow = document.createElement('canvas');
-        const gctx = glow.getContext('2d');
-        const dark = document.createElement('canvas');
-        const dctx = dark.getContext('2d');
-        if (!gctx || !dctx) return;
-
         const TAU = Math.PI * 2;
         const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
         const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -292,12 +286,11 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
 
         const G = 2400;
         const PEBBLE_G = 1450;
-        const STEP = 1 / 120;
+        const STEP = 1 / 60;
         const BULB = [0, 56];
         const BULB_R = 13.5;
         const PEBBLE_R = 6.5;
         const LAUNCH = 14.5;
-        const LIGHT_SCALE = 0.25;
 
         const sim = simRef.current;
 
@@ -306,7 +299,7 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
             const rect = container.getBoundingClientRect();
             const w = rect.width;
             const h = rect.height;
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
 
             sim.W = w;
             sim.H = h;
@@ -314,8 +307,6 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
 
             canvas.width = Math.round(w * dpr);
             canvas.height = Math.round(h * dpr);
-            glow.width = dark.width = Math.ceil(w * LIGHT_SCALE);
-            glow.height = dark.height = Math.ceil(h * LIGHT_SCALE);
 
             const isMobile = w < 768;
 
@@ -689,67 +680,45 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
            ========================================================================= */
         const renderLight = () => {
             const I = clamp(sim.light.I, 0, 1);
-            gctx.setTransform(1, 0, 0, 1, 0, 0);
-            gctx.clearRect(0, 0, glow.width, glow.height);
+            if (I <= 0.01) return;
 
-            if (I > 0.002) {
-                gctx.setTransform(LIGHT_SCALE, 0, 0, LIGHT_SCALE, 0, 0);
-                const apex = toWorld(0, 2);
-                const rl = toWorld(-50, 50);
-                const rr = toWorld(50, 50);
-                const far = Math.max(sim.W, sim.H) * 2.2;
-                const nl = Math.hypot(rl.x - apex.x, rl.y - apex.y);
-                const nr = Math.hypot(rr.x - apex.x, rr.y - apex.y);
-                const dl = { x: (rl.x - apex.x) / nl, y: (rl.y - apex.y) / nl };
-                const dr = { x: (rr.x - apex.x) / nr, y: (rr.y - apex.y) / nr };
-                const b = toWorld(BULB[0], BULB[1]);
-                const reach = Math.max(sim.W, sim.H) * 1.05;
+            const b = toWorld(BULB[0], BULB[1]);
+            const apex = toWorld(0, 2);
+            const rl = toWorld(-50, 50);
+            const rr = toWorld(50, 50);
+            const far = Math.min(sim.W, sim.H) * 1.5;
+            const nl = Math.hypot(rl.x - apex.x, rl.y - apex.y) || 1;
+            const nr = Math.hypot(rr.x - apex.x, rr.y - apex.y) || 1;
+            const dl = { x: (rl.x - apex.x) / nl, y: (rl.y - apex.y) / nl };
+            const dr = { x: (rr.x - apex.x) / nr, y: (rr.y - apex.y) / nr };
 
-                const grd = gctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, reach);
-                grd.addColorStop(0, `rgba(255,214,160,${I * 0.95})`);
-                grd.addColorStop(0.35, `rgba(255,200,135,${I * 0.75})`);
-                grd.addColorStop(1, 'rgba(255,190,120,0)');
-                gctx.fillStyle = grd;
-                gctx.beginPath();
-                gctx.moveTo(rl.x, rl.y);
-                gctx.lineTo(rr.x, rr.y);
-                gctx.lineTo(rr.x + dr.x * far, rr.y + dr.y * far);
-                gctx.lineTo(rl.x + dl.x * far, rl.y + dl.y * far);
-                gctx.closePath();
-                gctx.fill();
+            ctx.save();
+            ctx.globalCompositeOperation = 'source-over';
 
-                const halo = gctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 120);
-                halo.addColorStop(0, `rgba(255,210,150,${I * 0.45})`);
-                halo.addColorStop(1, 'rgba(255,210,150,0)');
-                gctx.fillStyle = halo;
-                gctx.fillRect(b.x - 120, b.y - 120, 240, 240);
-            }
+            // Light cone
+            const coneGrad = ctx.createRadialGradient(b.x, b.y, 10, b.x, b.y, far);
+            coneGrad.addColorStop(0, `rgba(255, 214, 160, ${I * 0.16})`);
+            coneGrad.addColorStop(0.4, `rgba(255, 200, 135, ${I * 0.07})`);
+            coneGrad.addColorStop(1, 'rgba(255, 190, 120, 0)');
+            ctx.fillStyle = coneGrad;
+            ctx.beginPath();
+            ctx.moveTo(rl.x, rl.y);
+            ctx.lineTo(rr.x, rr.y);
+            ctx.lineTo(rr.x + dr.x * far, rr.y + dr.y * far);
+            ctx.lineTo(rl.x + dl.x * far, rl.y + dl.y * far);
+            ctx.closePath();
+            ctx.fill();
 
-            // Dark illumination mask
-            dctx.setTransform(1, 0, 0, 1, 0, 0);
-            dctx.globalCompositeOperation = 'source-over';
-            dctx.clearRect(0, 0, dark.width, dark.height);
-            
-            const isDark = document.documentElement.classList.contains('dark');
-            dctx.fillStyle = isDark
-                ? `rgba(3,4,6,${0.85 - I * 0.1})`
-                : `rgba(225,232,242,${0.35 - I * 0.05})`;
-            dctx.fillRect(0, 0, dark.width, dark.height);
+            // Warm halo around bulb
+            const halo = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 130);
+            halo.addColorStop(0, `rgba(255, 210, 150, ${I * 0.28})`);
+            halo.addColorStop(1, 'rgba(255, 210, 150, 0)');
+            ctx.fillStyle = halo;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, 130, 0, TAU);
+            ctx.fill();
 
-            if (I > 0.002) {
-                dctx.globalCompositeOperation = 'destination-out';
-                dctx.drawImage(glow, 0, 0);
-                dctx.globalCompositeOperation = 'source-over';
-            }
-
-            ctx.drawImage(dark, 0, 0, sim.W, sim.H);
-            if (I > 0.002) {
-                ctx.globalCompositeOperation = 'lighter';
-                ctx.globalAlpha = isDark ? 0.16 : 0.22;
-                ctx.drawImage(glow, 0, 0, sim.W, sim.H);
-                ctx.globalAlpha = 1;
-                ctx.globalCompositeOperation = 'source-over';
-            }
+            ctx.restore();
         };
 
         const drawBulb = (I: number) => {
@@ -1094,6 +1063,25 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
 
             // Check if scene has converged to complete rest (zero moving parts)
             const targetLight = sim.light.on && !sim.light.broken ? 1 : 0;
+            const isLampSettled = Math.abs(sim.lamp.omega) < 0.002 && Math.abs(sim.lamp.theta) < 0.002;
+            if (isLampSettled && (!sim.grab || sim.grab.type !== 'lamp')) {
+                sim.lamp.omega = 0;
+                sim.lamp.theta = 0;
+            }
+
+            const isSlingSettled =
+                Math.hypot(sim.sling.rest.x - sim.sling.pouch.x, sim.sling.rest.y - sim.sling.pouch.y) < 0.8 &&
+                Math.hypot(sim.sling.vel.x, sim.sling.vel.y) < 0.8;
+            if (isSlingSettled && (!sim.grab || sim.grab.type !== 'pouch')) {
+                sim.sling.pouch.x = sim.sling.rest.x;
+                sim.sling.pouch.y = sim.sling.rest.y;
+                sim.sling.vel.x = 0;
+                sim.sling.vel.y = 0;
+            }
+
+            if (Math.abs(sim.light.I - targetLight) < 0.008) sim.light.I = targetLight;
+            if (Math.abs(sim.light.fil - targetLight) < 0.008) sim.light.fil = targetLight;
+
             const isIdle =
                 !sim.grab &&
                 sim.pebbles.length === 0 &&
@@ -1120,36 +1108,31 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
             animId = requestAnimationFrame(frame);
         };
 
-        // ResizeObserver: Re-layout, re-render, and wake up
+        // ResizeObserver: Re-layout and render static frame without starting continuous RAF loop
         const resizeObserver = new ResizeObserver(() => {
             updateSize();
             render();
-            wakeUp();
         });
         resizeObserver.observe(container);
 
-        // IntersectionObserver: Only run RAF loop when the About section is visible
+        // IntersectionObserver: Only allow RAF loop when About section is actually scrolled in view
         const intersectionObserver = new IntersectionObserver(
             ([entry]) => {
                 isVisible = entry.isIntersecting;
-                if (isVisible) {
-                    render();
-                    wakeUp();
-                } else {
+                if (!isVisible) {
                     if (isRunning) {
                         cancelAnimationFrame(animId);
                         isRunning = false;
                     }
                 }
             },
-            { threshold: 0 }
+            { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
         );
         intersectionObserver.observe(container);
 
-        // Theme MutationObserver: Redraw immediately when user toggles dark/light theme
+        // Theme MutationObserver: Redraw static frame immediately when user toggles dark/light theme
         const themeObserver = new MutationObserver(() => {
             render();
-            wakeUp();
         });
         themeObserver.observe(document.documentElement, {
             attributes: true,

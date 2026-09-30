@@ -102,7 +102,7 @@ export const AboutSection: React.FC = () => {
             id="about" 
             className="section-padding bg-slate-50/70 dark:bg-gray-950/80 relative overflow-hidden py-16 sm:py-24 transform-gpu"
         >
-            {/* Interactive Slingshot Lamp Overlay & Physics Simulation */}
+            {/* Interactive Slingshot Lamp Overlay & Physics Simulation (Hyper-optimized, zero idle cost) */}
             <SlingshotLampOverlay containerRef={sectionRef} />
 
             {/* Ambient Background & Texture Layer - Isolated with contain: strict (Zero Gaussian filter passes for 60/120fps scrolling) */}
@@ -138,8 +138,12 @@ export const AboutSection: React.FC = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-40px" }}
                     transition={{ duration: 0.5 }}
-                    className="text-center mb-12 sm:mb-16 pt-16 sm:pt-24"
+                    className="text-center mb-12 sm:mb-16 pt-14 sm:pt-20"
                 >
+                    <span className="glass-subtle text-[11px] sm:text-xs font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent border border-primary-500/20 shadow-xs inline-flex items-center gap-1.5 mb-3">
+                        <SparklesIcon className="w-3.5 h-3.5 text-primary-500" />
+                        Experience & Background
+                    </span>
                     <h2 className="text-3xl xs:text-4xl sm:text-5xl font-black font-display mb-3.5 tracking-tight">
                         About <span className="gradient-text">Me</span>
                     </h2>
