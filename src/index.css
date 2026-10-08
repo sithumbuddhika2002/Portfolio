@@ -10,6 +10,7 @@
 
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
     overflow-x: hidden;
   }
 
@@ -18,6 +19,10 @@
     @apply font-sans antialiased;
     overflow-x: hidden;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
 @layer components {
@@ -96,7 +101,7 @@
   }
 
   .section-padding {
-    @apply py-20 px-4 md:px-8 lg:px-16;
+    @apply py-14 sm:py-20 px-4 md:px-8 lg:px-16;
   }
 }
 
@@ -122,6 +127,20 @@
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400 dark:bg-gray-600;
+}
+
+/* Hide scrollbars */
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.scrollbar-none,
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Smooth animations */
@@ -268,4 +287,4 @@
 .switch-box[aria-checked="true"] .pilot-led {
   background: #ffb45a;
   box-shadow: 0 0 7px 2px rgba(255, 170, 80, 0.85);
-}
+}

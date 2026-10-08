@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import type { Company } from '../../types/portfolio';
-import { SlingshotLampOverlay } from './SlingshotLampOverlay';
+import { TextRoll } from '../ui/text-roll';
 import { 
     EnvelopeIcon, 
     PhoneIcon, 
@@ -20,7 +20,25 @@ export const AboutSection: React.FC = () => {
     const { data } = usePortfolioData();
     const { profile } = data;
     const [copiedText, setCopiedText] = useState<string | null>(null);
-    const sectionRef = useRef<HTMLDivElement>(null);
+
+    // Rotating titles using 3D TextRoll cylinder flip animation
+    const titles = useMemo(() => {
+        if (profile.titles && profile.titles.length > 0) {
+            return profile.titles;
+        }
+        return profile.title ? [profile.title] : ['Associate Software Engineer'];
+    }, [profile.titles, profile.title]);
+
+    const [currentTitleIndex, setCurrentTitleIndex] = useState(0);
+
+    // Auto-rotate titles every 3.8s smoothly
+    useEffect(() => {
+        if (titles.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentTitleIndex((prev) => (prev + 1) % titles.length);
+        }, 3800);
+        return () => clearInterval(interval);
+    }, [titles.length]);
 
     // Get companies from data or fallback
     const companies: Company[] = data.companies && data.companies.length > 0
@@ -98,38 +116,9 @@ export const AboutSection: React.FC = () => {
 
     return (
         <section 
-            ref={sectionRef}
             id="about" 
-            className="section-padding bg-slate-50/70 dark:bg-gray-950/80 relative overflow-hidden py-16 sm:py-24 transform-gpu"
+            className="section-padding bg-gray-50 dark:bg-gray-950 relative overflow-hidden py-16 sm:py-24"
         >
-            {/* Interactive Slingshot Lamp Overlay & Physics Simulation (Hyper-optimized, zero idle cost) */}
-            <SlingshotLampOverlay containerRef={sectionRef} />
-
-            {/* Ambient Background & Texture Layer - Isolated with contain: strict (Zero Gaussian filter passes for 60/120fps scrolling) */}
-            <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden" style={{ contain: 'strict' }}>
-                <div 
-                    className="absolute top-10 left-[-10%] sm:left-4 w-72 h-72 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem] rounded-full pointer-events-none"
-                    style={{
-                        background: 'radial-gradient(circle, rgba(14, 165, 233, 0.16) 0%, rgba(56, 189, 248, 0.06) 45%, transparent 70%)',
-                    }}
-                />
-                <div 
-                    className="absolute bottom-10 right-[-10%] sm:right-6 w-80 h-80 sm:w-[30rem] sm:h-[30rem] rounded-full pointer-events-none"
-                    style={{
-                        background: 'radial-gradient(circle, rgba(217, 70, 239, 0.16) 0%, rgba(217, 70, 239, 0.05) 45%, transparent 70%)',
-                    }}
-                />
-                <div 
-                    className="absolute top-1/2 left-1/3 w-64 h-64 sm:w-80 sm:h-80 rounded-full pointer-events-none"
-                    style={{
-                        background: 'radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(99, 102, 241, 0.04) 45%, transparent 70%)',
-                    }}
-                />
-                
-                {/* Subtle dot matrix pattern */}
-                <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none" />
-            </div>
-
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 
                 {/* Section Header */}
@@ -138,18 +127,11 @@ export const AboutSection: React.FC = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-40px" }}
                     transition={{ duration: 0.5 }}
-                    className="text-center mb-12 sm:mb-16 pt-14 sm:pt-20"
+                    className="text-center mb-12 sm:mb-16"
                 >
-                    <span className="glass-subtle text-[11px] sm:text-xs font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent border border-primary-500/20 shadow-xs inline-flex items-center gap-1.5 mb-3">
-                        <SparklesIcon className="w-3.5 h-3.5 text-primary-500" />
-                        Experience & Background
-                    </span>
-                    <h2 className="text-3xl xs:text-4xl sm:text-5xl font-black font-display mb-3.5 tracking-tight">
-                        About <span className="gradient-text">Me</span>
+                    <h2 className="text-3xl xs:text-4xl sm:text-5xl font-black font-display tracking-tight text-gray-900 dark:text-white">
+                        About Me
                     </h2>
-                    <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-2 leading-relaxed">
-                        Get to know my experience, companies I work with, and my active open-source contributions.
-                    </p>
                 </motion.div>
 
                 {/* Main Responsive Grid Layout */}
@@ -201,6 +183,43 @@ export const AboutSection: React.FC = () => {
                         viewport={{ once: true, margin: "-40px" }}
                         className="lg:col-span-7 space-y-5 sm:space-y-6 w-full transform-gpu"
                     >
+                        <motion.div variants={itemVariants} className="space-y-3 sm:space-y-3.5">
+                            <div>
+                                <p className="text-xs sm:text-sm font-semibold tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+                                    Hi, I'm
+                                </p>
+                                <h3 className="text-3xl sm:text-4xl lg:text-5xl font-black font-display tracking-tight">
+                                    <span className="gradient-text">
+                                        {profile.name}
+                                    </span>
+                                </h3>
+                            </div>
+
+                            {/* Multiple Titles with TextRoll Animation */}
+                            <div
+                                className="text-xl sm:text-2xl font-bold min-h-[2.4rem] flex items-center cursor-pointer select-none text-gray-900 dark:text-gray-100"
+                                onClick={() => {
+                                    if (titles.length > 1) {
+                                        setCurrentTitleIndex((prev) => (prev + 1) % titles.length);
+                                    }
+                                }}
+                                title={titles.length > 1 ? "Click to switch title" : undefined}
+                            >
+                                <TextRoll
+                                    duration={0.45}
+                                    getEnterDelay={(i) => Math.min(i * 0.02, 0.4)}
+                                    getExitDelay={(i) => Math.min(i * 0.02 + 0.03, 0.43)}
+                                    className="inline-block text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                >
+                                    {titles[currentTitleIndex % titles.length] || profile.title || ''}
+                                </TextRoll>
+                            </div>
+
+                            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line [overflow-wrap:anywhere] pt-1">
+                                {profile.aboutMe || profile.bio}
+                            </p>
+                        </motion.div>
+
                         {/* Experience Highlights Row */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             

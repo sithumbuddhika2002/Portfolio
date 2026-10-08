@@ -88,24 +88,9 @@ export const ExperienceSection: React.FC = () => {
     return (
         <section 
             id="experience" 
-            className="section-padding bg-gray-50/20 dark:bg-gray-950/20 relative overflow-hidden" 
+            className="section-padding bg-gray-50 dark:bg-gray-950 relative overflow-hidden" 
             ref={sectionRef}
         >
-            {/* Background decorative glowing orbs - Isolated with contain: strict (Zero filter blur overhead) */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ contain: 'strict' }}>
-                <div 
-                    className="absolute top-1/4 left-0 w-80 h-80 sm:w-96 sm:h-96 rounded-full pointer-events-none"
-                    style={{
-                        background: 'radial-gradient(circle, rgba(14, 165, 233, 0.10) 0%, rgba(14, 165, 233, 0.02) 50%, transparent 70%)',
-                    }}
-                />
-                <div 
-                    className="absolute bottom-1/4 right-0 w-80 h-80 sm:w-96 sm:h-96 rounded-full pointer-events-none"
-                    style={{
-                        background: 'radial-gradient(circle, rgba(217, 70, 239, 0.10) 0%, rgba(217, 70, 239, 0.02) 50%, transparent 70%)',
-                    }}
-                />
-            </div>
 
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Header */}
@@ -134,7 +119,7 @@ export const ExperienceSection: React.FC = () => {
                                     setActiveTab(tab);
                                     setActiveIndex(0);
                                 }}
-                                className={`relative px-5 py-2.5 rounded-lg text-sm font-semibold capitalize transition-colors duration-300 cursor-pointer z-10 ${
+                                className={`relative px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold capitalize transition-colors duration-300 cursor-pointer z-10 ${
                                     activeTab === tab
                                         ? 'text-white'
                                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-950 dark:hover:text-white'
@@ -169,7 +154,7 @@ export const ExperienceSection: React.FC = () => {
                                     const isActive = activeIndex === index;
                                     return (
                                         <button
-                                            key={item.id}
+                                            key={`${item.type}-${item.id}`}
                                             onClick={() => setActiveIndex(index)}
                                             className={`flex-shrink-0 snap-center min-w-[200px] p-4 rounded-xl border text-left transition-all duration-300 ${
                                                 isActive
@@ -211,7 +196,7 @@ export const ExperienceSection: React.FC = () => {
                                     const isActive = activeIndex === index;
                                     return (
                                         <div
-                                            key={item.id}
+                                            key={`${item.type}-${item.id}`}
                                             className="relative flex items-start group"
                                         >
                                             {/* Pulsing Active Node dot on timeline line */}
@@ -277,7 +262,7 @@ export const ExperienceSection: React.FC = () => {
                                     
                                     return (
                                         <motion.div
-                                            key={item.id}
+                                            key={`${item.type}-${item.id}`}
                                             initial={{ opacity: 0, x: 50, scale: 0.98 }}
                                             animate={{ opacity: 1, x: 0, scale: 1 }}
                                             exit={{ opacity: 0, x: -50, scale: 0.98 }}
@@ -286,7 +271,7 @@ export const ExperienceSection: React.FC = () => {
                                             dragConstraints={{ left: 0, right: 0 }}
                                             dragElastic={0.25}
                                             onDragEnd={handleDragEnd}
-                                            className="card shadow-2xl p-6 md:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 touch-pan-y cursor-grab active:cursor-grabbing select-none"
+                                            className="card shadow-2xl p-5 sm:p-6 md:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 touch-pan-y cursor-grab active:cursor-grabbing select-none"
                                         >
                                             {/* Story Progress Indicators (Instagram-style) */}
                                             <div className="flex gap-1.5 w-full mb-6">

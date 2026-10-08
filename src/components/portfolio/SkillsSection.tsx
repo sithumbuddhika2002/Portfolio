@@ -1,9 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
-
-
-
+import { SlingshotLampOverlay } from './SlingshotLampOverlay';
 import { githubService } from '../../services/github';
 
 const getSubtitle = (skillName: string): string => {
@@ -46,16 +44,24 @@ const getSubtitle = (skillName: string): string => {
 export const SkillsSection: React.FC = () => {
     const { data } = usePortfolioData();
     const { skills } = data;
+    const sectionRef = useRef<HTMLDivElement>(null);
 
     return (
-        <section id="skills" className="section-padding">
-            <div className="max-w-7xl mx-auto">
+        <section 
+            ref={sectionRef}
+            id="skills" 
+            className="section-padding relative overflow-hidden"
+        >
+            {/* Interactive Slingshot Lamp Overlay & Physics Simulation */}
+            <SlingshotLampOverlay containerRef={sectionRef} />
+
+            <div className="max-w-7xl mx-auto relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 50 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
-                    className="text-center mb-16"
+                    className="text-center mb-16 pt-24 sm:pt-32 lg:pt-36"
                 >
                     <h2 className="text-4xl md:text-5xl font-bold font-display mb-4">
                         My <span className="gradient-text">Skills</span>
@@ -65,7 +71,7 @@ export const SkillsSection: React.FC = () => {
                     </p>
                 </motion.div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
                     {skills.map((skill, index) => {
                         const iconUrl = githubService.getSkillIcon(skill.name);
 
@@ -79,12 +85,12 @@ export const SkillsSection: React.FC = () => {
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 whileInView={{ opacity: 1, scale: 1 }}
                                 viewport={{ once: true }}
-                                transition={{ delay: index * 0.05 }}
-                                whileHover={{ y: -5 }}
+                                transition={{ delay: index * 0.04 }}
+                                whileHover={{ y: -4 }}
                                 className="group relative"
                             >
-                                <div className="p-3 sm:p-4 bg-gray-100 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors duration-300 flex items-center gap-3 sm:gap-4">
-                                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-xl p-2 group-hover:bg-gray-300 dark:group-hover:bg-gray-700 transition-colors duration-300 overflow-hidden">
+                                <div className="p-2.5 sm:p-4 bg-gray-100 dark:bg-gray-900 rounded-xl sm:rounded-2xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors duration-300 flex items-center gap-2.5 sm:gap-4">
+                                    <div className="w-9 h-9 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-lg sm:rounded-xl p-1.5 sm:p-2 group-hover:bg-gray-300 dark:group-hover:bg-gray-700 transition-colors duration-300 overflow-hidden">
                                         {hasCustomIcon ? (
                                             isSvg ? (
                                                 <div
@@ -105,17 +111,17 @@ export const SkillsSection: React.FC = () => {
                                                 className="w-full h-full object-contain"
                                             />
                                         ) : (
-                                            <span className="text-xl font-bold text-gray-900 dark:text-white">
+                                            <span className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">
                                                 {skill.name[0]}
                                             </span>
                                         )}
                                     </div>
 
-                                    <div className="flex flex-col">
-                                        <h4 className="font-bold text-gray-900 dark:text-gray-100 text-sm sm:text-base leading-tight">
+                                    <div className="flex flex-col min-w-0 flex-1">
+                                        <h4 className="font-bold text-gray-900 dark:text-gray-100 text-xs sm:text-base leading-tight truncate">
                                             {skill.name}
                                         </h4>
-                                        <span className="text-sm text-gray-500 font-medium">
+                                        <span className="text-[11px] sm:text-sm text-gray-500 font-medium truncate mt-0.5">
                                             {getSubtitle(skill.name)}
                                         </span>
                                     </div>

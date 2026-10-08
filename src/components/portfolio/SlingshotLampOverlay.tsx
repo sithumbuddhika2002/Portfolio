@@ -24,10 +24,10 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
     // Dynamic coordinates for interactive DOM handles
     const [handles, setHandles] = useState({
         slingX: 100,
-        slingY: 450,
-        slingRestY: 375,
+        slingY: 530,
+        slingRestY: 455,
         lampX: 300,
-        lampShadeY: 85,
+        lampShadeY: 63,
         isMobile: false,
     });
 
@@ -36,13 +36,13 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
         W: 0,
         H: 0,
         DPR: 1,
-        lamp: { ax: 0, ay: 0, len: 55, theta: 0, omega: 0 },
+        lamp: { ax: 0, ay: 0, len: 28, theta: 0, omega: 0 },
         light: { on: true, I: 1, fil: 1, heat: 0, warm: 0, popT: 0, broken: false, flash: 0 },
         sling: {
             x: 100,
-            y: 450,
-            rest: { x: 100, y: 375 },
-            pouch: { x: 100, y: 375 },
+            y: 530,
+            rest: { x: 100, y: 455 },
+            pouch: { x: 100, y: 455 },
             vel: { x: 0, y: 0 },
             loaded: true,
             reloadT: 0,
@@ -310,22 +310,22 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
 
             const isMobile = w < 768;
 
-            // Lamp: Anchored at top center, short cord so bulb is proudly above "About Me"
+            // Lamp: Anchored at top center, placed higher up above the section content
             sim.lamp.ax = w / 2;
             sim.lamp.ay = 0;
-            sim.lamp.len = isMobile ? 42 : clamp(Math.min(w * 0.07, 60), 45, 60);
+            sim.lamp.len = isMobile ? 22 : clamp(Math.min(w * 0.035, 32), 24, 30);
 
-            // Slingshot: Positioned MORE BELOW the lamp level as requested
+            // Catapult / Slingshot: Positioned lower down alongside the skills grid
             if (!isMobile) {
-                // Desktop: in the left gutter, lower down (y ≈ 450, rest at y ≈ 375)
+                // Desktop: in the left gutter, lower down (y ≈ 530, rest at y ≈ 455)
                 sim.sling.x = clamp(w * 0.10, 65, 140);
-                sim.sling.y = 450;
-                sim.sling.rest = { x: sim.sling.x, y: 375 };
+                sim.sling.y = 530;
+                sim.sling.rest = { x: sim.sling.x, y: 455 };
             } else {
-                // Mobile: positioned below the header text with generous left padding (x ≈ 85) so thumb doesn't hit screen edge
+                // Mobile: positioned lower down below the header
                 sim.sling.x = clamp(w * 0.22, 70, 95);
-                sim.sling.y = 350;
-                sim.sling.rest = { x: sim.sling.x, y: 285 };
+                sim.sling.y = 420;
+                sim.sling.rest = { x: sim.sling.x, y: 350 };
             }
 
             if (!sim.grab || sim.grab.type !== 'pouch') {
@@ -1018,7 +1018,9 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
             ctx.clearRect(0, 0, sim.W, sim.H);
             renderLight();
             drawLamp();
-            drawSlingshot();
+            if (sim.W >= 768) {
+                drawSlingshot();
+            }
             drawParticles();
 
             if (sim.light.flash > 0) {
@@ -1165,8 +1167,8 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
         const sim = simRef.current;
         const grabRadius = sim.W < 768 ? 44 : 50;
 
-        // Check if hitting slingshot pouch
-        if (sim.sling.loaded && Math.hypot(x - sim.sling.pouch.x, y - sim.sling.pouch.y) < grabRadius) {
+        // Check if hitting slingshot pouch (only on desktop)
+        if (sim.W >= 768 && sim.sling.loaded && Math.hypot(x - sim.sling.pouch.x, y - sim.sling.pouch.y) < grabRadius) {
             e.currentTarget.setPointerCapture(e.pointerId);
             sim.grab = { type: 'pouch', pointerId: e.pointerId };
             sim.mouse = { x, y };
@@ -1253,7 +1255,7 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
 
             {/* Interactive Pointer Surface on the Lamp Shade (Top Center) */}
             <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-32 sm:w-36 h-36 sm:h-40 cursor-grab active:cursor-grabbing pointer-events-auto touch-none"
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-32 sm:w-36 h-28 sm:h-32 cursor-grab active:cursor-grabbing pointer-events-auto touch-none"
                 style={{ zIndex: 25 }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
@@ -1262,9 +1264,9 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
                 title="Drag to swing the lamp"
             />
 
-            {/* Interactive Pointer Surface on the Slingshot (Positioned further down for effortless upward trajectory) */}
+            {/* Interactive Pointer Surface on the Slingshot (Only shown on desktop / md:block) */}
             <div
-                className="absolute pointer-events-auto touch-none group/sling"
+                className="hidden md:block absolute pointer-events-auto touch-none group/sling"
                 style={{
                     left: `${handles.slingX - (handles.isMobile ? 38 : 48)}px`,
                     top: `${handles.slingRestY - (handles.isMobile ? 38 : 48)}px`,
@@ -1349,7 +1351,7 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
 
             {/* Floating "Replace Bulb" Reset Button when shattered */}
             {bulbBroken && (
-                <div className="absolute top-24 sm:top-32 left-1/2 -translate-x-1/2 pointer-events-auto z-40 animate-bounce">
+                <div className="absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 pointer-events-auto z-40 animate-bounce">
                     <button
                         onClick={handleReplaceBulb}
                         className="px-4 py-2 rounded-full bg-amber-400 text-gray-900 font-bold text-xs shadow-xl hover:bg-amber-300 transition-all flex items-center gap-2 border border-amber-200"

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
+import { PortfolioLoader } from '../components/portfolio/PortfolioLoader';
 import { Navbar } from '../components/common/Navbar';
 import { HeroSection } from '../components/portfolio/HeroSection';
 import { AboutSection } from '../components/portfolio/AboutSection';
@@ -11,22 +12,18 @@ import { usePortfolioData } from '../hooks/usePortfolioData';
 export const Portfolio: React.FC = () => {
     const { loading } = usePortfolioData();
 
-    // Show loading spinner while data loads from Firebase
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-                <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600"></div>
-                    <p className="mt-4 text-gray-600 dark:text-gray-400">Loading portfolio...</p>
-                </div>
-            </div>
-        );
-    }
+    const [sequenceComplete, setSequenceComplete] = useState(false);
+    const [loaderDismissed, setLoaderDismissed] = useState(false);
+    const signatureDestination = useRef<HTMLImageElement>(null);
+    const showHomepage = !loading && sequenceComplete;
 
     return (
-        <div className="min-h-screen">
+        <>
+        {!loaderDismissed && <PortfolioLoader exiting={showHomepage} destinationRef={signatureDestination}
+            onSequenceComplete={setSequenceComplete} onDismiss={setLoaderDismissed} />}
+        {showHomepage && <div className="min-h-screen" inert={!loaderDismissed}>
             <Navbar />
-            <HeroSection />
+            <HeroSection signatureRef={signatureDestination} signatureHandoff={!loaderDismissed} />
             <AboutSection />
             <SkillsSection />
             <ProjectsSection />
@@ -41,6 +38,7 @@ export const Portfolio: React.FC = () => {
                     </p>
                 </div>
             </footer>
-        </div>
+        </div>}
+        </>
     );
 };

@@ -59,7 +59,7 @@ export const Navbar: React.FC = () => {
                                 e.preventDefault();
                                 scrollToSection('#home');
                             }}
-                            className="text-xl sm:text-2xl font-bold font-display gradient-text truncate"
+                            className="text-xl sm:text-2xl font-bold font-display text-white truncate"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
@@ -127,12 +127,20 @@ export const Navbar: React.FC = () => {
             {/* Mobile Menu */}
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                        className="md:hidden glass-strong mt-4 mx-4 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
-                    >
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsOpen(false)}
+                            className="fixed inset-0 bg-black/40 backdrop-blur-xs -z-10 md:hidden"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                            className="md:hidden glass-strong mt-4 mx-4 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
+                        >
                         <div className="px-4 py-4 space-y-1 flex flex-col items-center">
                             {navLinks.map((link, index) => (
                                 <motion.a
@@ -152,6 +160,7 @@ export const Navbar: React.FC = () => {
                             ))}
                         </div>
                     </motion.div>
+                    </>
                 )}
             </AnimatePresence>
         </motion.nav>

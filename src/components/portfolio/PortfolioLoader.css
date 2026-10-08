@@ -1,0 +1,27 @@
+.portfolio-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    min-height: 100svh;
+    padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+        max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+}
+
+.portfolio-loader__backdrop {
+    position: absolute;
+    inset: 0;
+}
+
+.portfolio-loader__signature {
+    position: relative;
+    display: block;
+    width: min(clamp(240px, 48vw, 620px), calc(80svh * 1448 / 1086));
+    max-width: 100%;
+    max-height: 80svh;
+    aspect-ratio: 1448 / 1086;
+    height: auto;
+    object-fit: contain;
+    opacity: 0;
+}

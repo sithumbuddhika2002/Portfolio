@@ -1,0 +1,5 @@
+Generated using the built-in image_gen tool.
+Native result: 1672 x 941. No upscaling. WebP derivatives: 1672, 1280, and 768 pixels wide.
+
+Prompt:
+Use case: photorealistic-natural. Generate a BACKGROUND SCENERY ONLY asset for an existing software engineer portfolio hero, native 3840x2160 landscape if supported, otherwise highest available landscape resolution. Deep near-black charcoal cinematic atmosphere, spacious almost-black upper 75 percent with very subtle natural environmental depth, faint distant dark stone architectural recesses barely visible at the sides, low dark rough slate rock terrain along the bottom edge and corners, central area clear and quiet. Subtle neutral ambient illumination reveals crisp natural stone textures without highlights; premium understated editorial photographic backdrop. Predominantly #090b0f charcoal. No people, silhouettes, faces, bodies, letters, typography, signature, text, UI, buttons, lines, circles, neon, glow, bloom, gradients, purple lights, blue lights, particles, fog, blur or extra objects. This is a usable background image, not a website mockup. Preserve sharp texture detail with extremely restrained contrast.
