@@ -13,7 +13,10 @@ export function HeroPortrait({ name }: { name: string }) {
         const canvas = canvasRef.current;
         const container = containerRef.current;
         if (!video || !canvas || !container) return;
-        const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: false });
+        // Match the browser compositor's premultiplied-alpha representation.
+        // Transparent pixels in the packed video still contain bright RGB;
+        // multiplying before canvas compositing prevents an outline on dark UI.
+        const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false });
         if (!gl) return;
         const shaders: WebGLShader[] = [];
         const shader = (type: number, source: string) => {
@@ -39,7 +42,27 @@ export function HeroPortrait({ name }: { name: string }) {
         const fail = () => { stopped = true; video.pause(); setReady(false); };
         try {
             gl.attachShader(program, shader(gl.VERTEX_SHADER, 'attribute vec2 position; varying vec2 uv; void main(){ uv=vec2((position.x+1.0)*0.5,(1.0-position.y)*0.5); gl_Position=vec4(position,0.0,1.0); }'));
-            gl.attachShader(program, shader(gl.FRAGMENT_SHADER, 'precision mediump float; varying vec2 uv; uniform sampler2D footage; void main(){ vec3 rgb=texture2D(footage,vec2(uv.x*0.5,uv.y)).rgb; float a=texture2D(footage,vec2(0.5+uv.x*0.5,uv.y)).r; gl_FragColor=vec4(rgb,a); }'));
+            gl.attachShader(program, shader(gl.FRAGMENT_SHADER, `
+                precision mediump float;
+                varying vec2 uv;
+                uniform sampler2D footage;
+                uniform vec2 matteTexel;
+                void main() {
+                    vec3 rgb = texture2D(footage, vec2(uv.x * 0.5, uv.y)).rgb;
+                    vec2 maskUV = vec2(0.5 + uv.x * 0.5, uv.y);
+                    float alpha = texture2D(footage, maskUV).r;
+                    // Contract the matte by roughly one source pixel to discard
+                    // the pale background spill along hair and jacket edges.
+                    vec2 inset = matteTexel * 1.25;
+                    alpha = min(alpha, texture2D(footage, maskUV + vec2(inset.x, 0.0)).r);
+                    alpha = min(alpha, texture2D(footage, maskUV - vec2(inset.x, 0.0)).r);
+                    alpha = min(alpha, texture2D(footage, maskUV + vec2(0.0, inset.y)).r);
+                    alpha = min(alpha, texture2D(footage, maskUV - vec2(0.0, inset.y)).r);
+                    // Suppress faint compression residue without a hard cutout.
+                    alpha = smoothstep(0.04, 0.96, alpha);
+                    gl_FragColor = vec4(rgb * alpha, alpha);
+                }
+            `));
             gl.linkProgram(program);
             if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error('Portrait shader linking failed');
             gl.useProgram(program);
@@ -62,12 +85,14 @@ export function HeroPortrait({ name }: { name: string }) {
             gl.deleteTexture(texture);
             return;
         }
+        const matteTexel = gl.getUniformLocation(program, 'matteTexel');
         const draw = () => {
             if (stopped) return;
             const decodedFrame = Math.floor(video.currentTime * 24);
             if (video.readyState >= 2 && video.currentTime !== lastTime && (hasVideoFrameCallback || decodedFrame !== lastDecodedFrame)) {
                 try {
                     gl.viewport(0, 0, canvas.width, canvas.height);
+                    gl.uniform2f(matteTexel, 1 / video.videoWidth, 1 / video.videoHeight);
                     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
                     gl.drawArrays(gl.TRIANGLES, 0, 6);
                     lastTime = video.currentTime;
