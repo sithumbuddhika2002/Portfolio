@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://portfolio-flax-ten-t6cfoa5253.vercel.app/sitemap.xml

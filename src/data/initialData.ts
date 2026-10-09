@@ -2,7 +2,7 @@ import type { PortfolioData } from '../types/portfolio';
 
 export const initialData: PortfolioData = {
     profile: {
-        name: 'Your Name',
+        name: 'Sithum Buddhika',
         title: 'Full Stack Developer & Designer',
         titles: [
             'Associate Software Engineer | Foresight Engineering',
