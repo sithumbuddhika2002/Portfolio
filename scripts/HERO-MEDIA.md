@@ -104,3 +104,18 @@ Responsive follow-up: removed the upper identity/Portfolio label, widened the
 stage to viewport width minus 1rem on each side, and sized the stage with svh
 constraints for desktop, tablet, phones, and landscape. Playback handler checks
 passed for completion, Home restart, other links, visibility, and reduced motion.
+
+## Optimized delivery (2026-10-09)
+
+The runtime now selects `hero-packed-desktop.mp4` (1080 x 960 packed, 1,157,186 bytes)
+or `hero-packed-mobile.mp4` (720 x 640 packed, 577,528 bytes) at the initial viewport.
+Both preserve the complete clip and frame rate; the original packed master is retained.
+Exports use H.264, CRF 23 desktop / 24 mobile, and `-movflags +faststart`.
+The color and matte halves remain synchronized in the same file.
+The transparent WebP poster is 42,644 bytes (quality 90, alpha quality 100).
+
+`heroMedia.ts` creates one buffered video per document, starting during the intro.
+The portrait reuses that element without resetting its source during Strict Mode
+cleanup or route remounts. Reduced-motion startup uses the poster without video.
+The signature intro completion flag also survives route remounts, but resets on a
+full browser refresh. Original media and the signature animation timeline are unchanged.

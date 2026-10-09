@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { getHeroVideo, heroIntro } from '../components/portfolio/heroMedia';
 import { PortfolioLoader } from '../components/portfolio/PortfolioLoader';
 import { Navbar } from '../components/common/Navbar';
 import { HeroSection } from '../components/portfolio/HeroSection';
@@ -12,15 +13,22 @@ import { usePortfolioData } from '../hooks/usePortfolioData';
 export const Portfolio: React.FC = () => {
     const { loading } = usePortfolioData();
 
-    const [sequenceComplete, setSequenceComplete] = useState(false);
-    const [loaderDismissed, setLoaderDismissed] = useState(false);
+    const [sequenceComplete, setSequenceComplete] = useState(() => heroIntro.completed);
+    const [loaderDismissed, setLoaderDismissed] = useState(() => heroIntro.completed);
+    const dismissLoader = useCallback(() => {
+        heroIntro.completed = true;
+        setLoaderDismissed(true);
+    }, []);
+    useEffect(() => {
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) getHeroVideo();
+    }, []);
     const signatureDestination = useRef<HTMLImageElement>(null);
-    const showHomepage = !loading && sequenceComplete;
+    const showHomepage = !loading && (sequenceComplete || loaderDismissed);
 
     return (
         <>
         {!loaderDismissed && <PortfolioLoader exiting={showHomepage} destinationRef={signatureDestination}
-            onSequenceComplete={setSequenceComplete} onDismiss={setLoaderDismissed} />}
+            onSequenceComplete={setSequenceComplete} onDismiss={dismissLoader} />}
         {showHomepage && <div className="min-h-screen" inert={!loaderDismissed}>
             <Navbar />
             <HeroSection signatureRef={signatureDestination} signatureHandoff={!loaderDismissed} />

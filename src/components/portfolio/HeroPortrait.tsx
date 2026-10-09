@@ -1,23 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
+import { getHeroVideo } from './heroMedia';
 
 /** One H.264 stream carries color (left) and alpha (right), so the matte
  * cannot drift out of sync. WebGL only composites preprocessed pixels. */
 export function HeroPortrait({ name }: { name: string }) {
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const videoHostRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
-        const video = videoRef.current;
+        const host = videoHostRef.current;
         const canvas = canvasRef.current;
         const container = containerRef.current;
-        if (!video || !canvas || !container) return;
+        if (!host || !canvas || !container) return;
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         // Match the browser compositor's premultiplied-alpha representation.
         // Transparent pixels in the packed video still contain bright RGB;
         // multiplying before canvas compositing prevents an outline on dark UI.
         const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false });
         if (!gl) return;
+        const video = getHeroVideo();
+        host.appendChild(video);
+        canvas.width = window.innerWidth < 768 ? 360 : 540;
+        canvas.height = window.innerWidth < 768 ? 640 : 960;
         const shaders: WebGLShader[] = [];
         const shader = (type: number, source: string) => {
             const result = gl.createShader(type)!;
@@ -33,7 +39,7 @@ export function HeroPortrait({ name }: { name: string }) {
         let stopped = false;
         let frame = 0;
         let visible = true;
-        let completed = false;
+        let completed = video.ended;
         let lastTime = -1;
         let lastDecodedFrame = -1;
         const hasVideoFrameCallback = 'requestVideoFrameCallback' in video;
@@ -79,6 +85,8 @@ export function HeroPortrait({ name }: { name: string }) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         } catch {
+            video.pause();
+            video.remove();
             shaders.forEach(item => gl.deleteShader(item));
             gl.deleteProgram(program);
             gl.deleteBuffer(buffer);
@@ -149,8 +157,7 @@ export function HeroPortrait({ name }: { name: string }) {
         canvas.addEventListener('webglcontextlost', fail);
         document.addEventListener('visibilitychange', updatePlayback);
         motion.addEventListener('change', updatePlayback);
-        video.src = '/videos/hero-packed.mp4';
-        video.load();
+        draw();
         updatePlayback();
         return () => {
             stopped = true;
@@ -167,8 +174,7 @@ export function HeroPortrait({ name }: { name: string }) {
             document.removeEventListener('visibilitychange', updatePlayback);
             motion.removeEventListener('change', updatePlayback);
             video.pause();
-            video.removeAttribute('src');
-            video.load();
+            video.remove();
             shaders.forEach(item => gl.deleteShader(item));
             gl.deleteTexture(texture);
             gl.deleteBuffer(buffer);
@@ -177,8 +183,8 @@ export function HeroPortrait({ name }: { name: string }) {
     }, []);
 
     return <div className="hero-portrait" ref={containerRef}>
-        <img className="hero-portrait-poster" src="/videos/hero-cutout.png" alt={name} width="720" height="1280" fetchPriority="high" />
+        <img className="hero-portrait-poster" src="/videos/hero-cutout.webp" alt={name} width="720" height="1280" fetchPriority="high" />
         <canvas ref={canvasRef} className={`hero-portrait-canvas${ready ? ' is-ready' : ''}`} width="720" height="1280" role="img" aria-hidden={!ready} aria-label={`Moving portrait of ${name}`} />
-        <video ref={videoRef} className="hero-video-source" muted playsInline preload="auto" aria-hidden="true" />
+        <div ref={videoHostRef} />
     </div>;
 }

@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import { HeroPortrait } from './HeroPortrait';
+import { heroIntro } from './heroMedia';
 import './HeroSection.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -12,7 +13,7 @@ export const HeroSection = ({ signatureRef, signatureHandoff = false }: {
     signatureRef?: RefObject<HTMLImageElement | null>;
     signatureHandoff?: boolean;
 }) => {
-    const signatureManagedOnMount = useRef(signatureHandoff);
+    const signatureManagedOnMount = useRef(signatureHandoff || heroIntro.completed);
     const { data: { profile } } = usePortfolioData();
     const heroRef = useRef<HTMLElement>(null);
     const titles = profile.titles?.length ? profile.titles : [profile.title];
@@ -171,4 +172,3 @@ export const HeroSection = ({ signatureRef, signatureHandoff = false }: {
         </section>
     );
 };
-
