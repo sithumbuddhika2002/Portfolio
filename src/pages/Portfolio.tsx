@@ -9,9 +9,10 @@ import { ProjectsSection } from '../components/portfolio/ProjectsSection';
 import { ExperienceSection } from '../components/portfolio/ExperienceSection';
 import { ContactSection } from '../components/portfolio/ContactSection';
 import { usePortfolioData } from '../hooks/usePortfolioData';
+import '../components/portfolio/portfolioTheme.css';
 
 export const Portfolio: React.FC = () => {
-    const { loading } = usePortfolioData();
+    const { data, loading } = usePortfolioData();
 
     const [sequenceComplete, setSequenceComplete] = useState(() => heroIntro.completed);
     const [loaderDismissed, setLoaderDismissed] = useState(() => heroIntro.completed);
@@ -24,26 +25,38 @@ export const Portfolio: React.FC = () => {
     }, []);
     const signatureDestination = useRef<HTMLImageElement>(null);
     const showHomepage = !loading && (sequenceComplete || loaderDismissed);
+    const ownerName = data.profile?.name || 'Sithum Buddhika';
 
     return (
         <>
         {!loaderDismissed && <PortfolioLoader exiting={showHomepage} destinationRef={signatureDestination}
             onSequenceComplete={setSequenceComplete} onDismiss={dismissLoader} />}
-        {showHomepage && <div className="min-h-screen" inert={!loaderDismissed}>
+        {showHomepage && <div className="portfolio-public min-h-screen" inert={!loaderDismissed}>
             <Navbar />
-            <HeroSection signatureRef={signatureDestination} signatureHandoff={!loaderDismissed} />
-            <AboutSection />
-            <SkillsSection />
-            <ProjectsSection />
-            <ExperienceSection />
-            <ContactSection />
+            <main>
+                <HeroSection signatureRef={signatureDestination} signatureHandoff={!loaderDismissed} />
+                <AboutSection />
+                <SkillsSection />
+                <ProjectsSection />
+                <ExperienceSection />
+                <ContactSection />
+            </main>
 
-            {/* Footer */}
-            <footer className="bg-gray-900 text-white py-8">
-                <div className="max-w-7xl mx-auto px-4 text-center">
-                    <p className="text-gray-400">
-                        © {new Date().getFullYear()} All Right Reserved | Sithum Buddhika
+            <footer className="bg-[var(--pf-bg)] border-t border-[var(--pf-border)] text-[var(--pf-muted)] py-8 px-5 sm:px-8 lg:px-18">
+                <div className="max-w-[78rem] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                    <p>
+                        © {new Date().getFullYear()} {ownerName}. All rights reserved.
                     </p>
+                    <a
+                        href="#home"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            document.querySelector('#home')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="text-[var(--pf-muted)] hover:text-[var(--pf-ink)] transition-colors tracking-[0.16em] uppercase"
+                    >
+                        Back to top ↑
+                    </a>
                 </div>
             </footer>
         </div>}

@@ -1,426 +1,438 @@
-import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useMemo, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
-import { 
-    BriefcaseIcon, 
-    AcademicCapIcon, 
-    MapPinIcon, 
-    CalendarIcon, 
-    CheckIcon,
+import type { Education, Experience } from '../../types/portfolio';
+import {
+    BriefcaseIcon,
+    AcademicCapIcon,
+    MapPinIcon,
+    CalendarIcon,
     ChevronLeftIcon,
-    ChevronRightIcon
+    ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.12,
-        },
-    },
+type TimelineItem = Experience | Education;
+
+const safeTimestamp = (dateStr?: string): number => {
+    if (!dateStr) return 0;
+    if (dateStr === 'Present') return Date.now();
+    const parsed = new Date(dateStr).getTime();
+    return Number.isNaN(parsed) ? 0 : parsed;
 };
 
-const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            type: 'spring' as const,
-            stiffness: 100,
-            damping: 15,
-        },
-    },
+const formatYear = (dateStr?: string): string => {
+    if (!dateStr) return '';
+    if (dateStr === 'Present') return 'Present';
+    const d = new Date(dateStr);
+    if (!Number.isNaN(d.getTime())) return String(d.getFullYear());
+    const match = dateStr.match(/\d{4}/);
+    return match ? match[0] : dateStr;
+};
+
+const formatMonthYear = (dateStr?: string): string => {
+    if (!dateStr) return '';
+    if (dateStr === 'Present') return 'Present';
+    const d = new Date(dateStr);
+    if (!Number.isNaN(d.getTime())) {
+        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+    }
+    return dateStr;
+};
+
+const getAchievements = (item: TimelineItem): string[] => {
+    if (item.achievements && item.achievements.length > 0) {
+        return item.achievements.filter(Boolean);
+    }
+    if (item.type === 'work' && item.description) {
+        return item.description
+            .split(/\.\s+/)
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0)
+            .map((s) => (s.endsWith('.') ? s : `${s}.`));
+    }
+    return [];
+};
+
+const OrgLogo: React.FC<{ logo?: string; name: string; isWork: boolean; size?: 'sm' | 'md' }> = ({
+    logo,
+    name,
+    isWork,
+    size = 'sm',
+}) => {
+    const [failed, setFailed] = useState(false);
+    const dim = size === 'md' ? 'w-12 h-12 p-2 rounded-xl' : 'w-9 h-9 p-1.5 rounded-lg';
+    const iconDim = size === 'md' ? 'w-5 h-5' : 'w-4 h-4';
+
+    return (
+        <div
+            className={`${dim} bg-[var(--pf-surface-2)] border border-[var(--pf-border)] shrink-0 flex items-center justify-center overflow-hidden text-[var(--pf-ink)]`}
+        >
+            {logo && !failed ? (
+                <img
+                    src={logo}
+                    alt={name}
+                    className="w-full h-full object-contain"
+                    loading="lazy"
+                    onError={() => setFailed(true)}
+                />
+            ) : isWork ? (
+                <BriefcaseIcon className={iconDim} aria-hidden="true" />
+            ) : (
+                <AcademicCapIcon className={iconDim} aria-hidden="true" />
+            )}
+        </div>
+    );
 };
 
 export const ExperienceSection: React.FC = () => {
     const { data } = usePortfolioData();
     const [activeTab, setActiveTab] = useState<'all' | 'work' | 'education'>('all');
     const [activeIndex, setActiveIndex] = useState(0);
+    const prefersReducedMotion = useReducedMotion();
 
-    const sectionRef = useRef<HTMLDivElement>(null);
+    const timeline = useMemo<TimelineItem[]>(() => {
+        const experience = data.experience || [];
+        const education = data.education || [];
+        return [...experience, ...education].sort(
+            (a, b) => safeTimestamp(b.endDate) - safeTimestamp(a.endDate)
+        );
+    }, [data.experience, data.education]);
 
-    const experience = data.experience || [];
-    const education = data.education || [];
+    const filteredTimeline = useMemo(
+        () =>
+            timeline.filter((item) => {
+                if (activeTab === 'all') return true;
+                return item.type === activeTab;
+            }),
+        [timeline, activeTab]
+    );
 
-    const timeline = [...experience, ...education].sort((a, b) => {
-        const dateA = a.endDate === 'Present' ? new Date() : new Date(a.endDate);
-        const dateB = b.endDate === 'Present' ? new Date() : new Date(b.endDate);
-        return dateB.getTime() - dateA.getTime();
-    });
+    const safeIndex =
+        filteredTimeline.length > 0
+            ? Math.min(activeIndex, filteredTimeline.length - 1)
+            : 0;
+    const currentItem = filteredTimeline[safeIndex];
 
-    const filteredTimeline = timeline.filter((item) => {
-        if (activeTab === 'all') return true;
-        if (activeTab === 'work') return item.type === 'work';
-        if (activeTab === 'education') return item.type === 'education';
-        return true;
-    });
-
-    const getAchievements = (item: any): string[] => {
-        if (item.achievements && item.achievements.length > 0) {
-            return item.achievements;
-        }
-        if (!item.description) return [];
-        // Fallback: split long description by sentences
-        return item.description
-            .split(/\.\s+/)
-            .map((s: string) => s.trim())
-            .filter((s: string) => s.length > 0)
-            .map((s: string) => (s.endsWith('.') ? s : s + '.'));
-    };
-
-    const handleDragEnd = (_event: any, info: any) => {
-        const threshold = 55;
-        if (info.offset.x < -threshold) {
-            // Swiped left, next slide
-            if (activeIndex < filteredTimeline.length - 1) {
-                setActiveIndex((prev) => prev + 1);
-            }
-        } else if (info.offset.x > threshold) {
-            // Swiped right, prev slide
-            if (activeIndex > 0) {
-                setActiveIndex((prev) => prev - 1);
-            }
-        }
-    };
+    const fadeProps = prefersReducedMotion
+        ? {}
+        : {
+              initial: { opacity: 0, y: 12 },
+              whileInView: { opacity: 1, y: 0 },
+              viewport: { once: true, margin: '-40px' },
+              transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
+          };
 
     return (
-        <section 
-            id="experience" 
-            className="section-padding bg-gray-50 dark:bg-gray-950 relative overflow-hidden" 
-            ref={sectionRef}
+        <section
+            id="experience"
+            className="pf-section pf-section--alt"
+            aria-labelledby="experience-heading"
         >
-
-            <div className="max-w-7xl mx-auto relative z-10">
-                {/* Header */}
+            <div className="pf-container">
+                {/* Split Header & Filter Tabs */}
                 <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center mb-12"
+                    {...fadeProps}
+                    className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-12"
                 >
-                    <h2 className="text-4xl md:text-5xl font-bold font-display mb-4">
-                        My <span className="gradient-text">Journey</span>
-                    </h2>
-                    <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                        An interactive timeline stepper mapping out my career and education
-                    </p>
+                    <div className="space-y-3">
+                        <p className="pf-eyebrow">
+                            <span className="pf-eyebrow-index">04</span>
+                            <span>/</span>
+                            <span>Experience</span>
+                        </p>
+                        <h2 id="experience-heading" className="pf-heading text-3xl sm:text-4xl lg:text-[2.75rem]">
+                            Experience &amp; Education
+                        </h2>
+                        <p className="pf-lead text-sm sm:text-base max-w-xl">
+                            Professional roles, academic background, and key technical contributions.
+                        </p>
+                    </div>
+
+                    <div
+                        className="inline-flex self-start md:self-auto rounded-xl border border-[var(--pf-border)] bg-[var(--pf-surface)] p-1"
+                        role="tablist"
+                        aria-label="Filter timeline"
+                    >
+                        {(['all', 'work', 'education'] as const).map((tab) => {
+                            const isActive = activeTab === tab;
+                            const label =
+                                tab === 'all' ? 'All' : tab === 'work' ? 'Experience' : 'Education';
+                            return (
+                                <button
+                                    key={tab}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={isActive}
+                                    onClick={() => {
+                                        setActiveTab(tab);
+                                        setActiveIndex(0);
+                                    }}
+                                    className={`px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-colors duration-150 cursor-pointer ${
+                                        isActive
+                                            ? 'bg-[var(--pf-ink)] text-[var(--pf-bg)]'
+                                            : 'text-[var(--pf-muted)] hover:text-[var(--pf-ink)]'
+                                    }`}
+                                >
+                                    {label}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </motion.div>
 
-                {/* Filter Tabs */}
-                <div className="flex justify-center mb-12">
-                    <div className="inline-flex rounded-xl bg-gray-100 dark:bg-gray-900 p-1.5 border border-gray-200/50 dark:border-gray-800/50 backdrop-blur-md">
-                        {(['all', 'work', 'education'] as const).map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => {
-                                    setActiveTab(tab);
-                                    setActiveIndex(0);
-                                }}
-                                className={`relative px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold capitalize transition-colors duration-300 cursor-pointer z-10 ${
-                                    activeTab === tab
-                                        ? 'text-white'
-                                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-950 dark:hover:text-white'
-                                }`}
-                            >
-                                {activeTab === tab && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-500 rounded-lg -z-10 shadow-md"
-                                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                {tab === 'all' ? 'All Journey' : tab === 'work' ? 'Experience' : 'Education'}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Main Stepper Container */}
-                {filteredTimeline.length === 0 ? (
-                    <div className="text-center py-16 card text-gray-500 dark:text-gray-400">
-                        No records found.
+                {/* Bento Timeline Stepper */}
+                {filteredTimeline.length === 0 || !currentItem ? (
+                    <div className="pf-bento p-12 text-center text-sm text-[var(--pf-muted)]">
+                        No timeline records found.
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-                        {/* LEFT: Navigator (Vertical on Desktop, Horizontal Scroll on Mobile) */}
-                        <div className="md:col-span-4 flex flex-col w-full">
-                            {/* Mobile Horizontal Timeline Track */}
-                            <div className="md:hidden w-full overflow-x-auto pb-4 mb-2 flex items-center gap-3 snap-x scrollbar-none">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 items-start">
+                        {/* Left Navigator */}
+                        <div className="md:col-span-4 w-full">
+                            {/* Mobile Horizontal Strip */}
+                            <div className="md:hidden w-full overflow-x-auto pb-3 flex items-stretch gap-3 snap-x">
                                 {filteredTimeline.map((item, index) => {
                                     const isWork = item.type === 'work';
-                                    const isActive = activeIndex === index;
+                                    const isActive = safeIndex === index;
+                                    const org = isWork ? item.company : item.institution;
+                                    const role = isWork ? item.position : item.degree;
+
                                     return (
                                         <button
                                             key={`${item.type}-${item.id}`}
+                                            type="button"
                                             onClick={() => setActiveIndex(index)}
-                                            className={`flex-shrink-0 snap-center min-w-[200px] p-4 rounded-xl border text-left transition-all duration-300 ${
+                                            aria-current={isActive ? 'step' : undefined}
+                                            className={`pf-bento shrink-0 snap-start w-60 p-4 text-left transition-colors duration-150 cursor-pointer ${
                                                 isActive
-                                                    ? 'bg-gradient-to-r from-primary-500/10 to-accent-500/10 border-primary-500 ring-2 ring-primary-500/20'
-                                                    : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                                                    ? 'border-[var(--pf-border-strong)] bg-[var(--pf-surface)]'
+                                                    : 'bg-[var(--pf-bg)] hover:border-[var(--pf-border-strong)]'
                                             }`}
                                         >
-                                            <div className="flex items-center gap-2 mb-1.5">
-                                                <div className={`w-6 h-6 rounded-md ${
-                                                    item.logo ? 'bg-white dark:bg-gray-800 p-0.5 border border-gray-200 dark:border-gray-700' : `bg-gradient-to-r ${isWork ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-pink-500'}`
-                                                } flex items-center justify-center overflow-hidden`}>
-                                                    {item.logo ? (
-                                                        <img src={item.logo} alt="" className="w-full h-full object-contain" />
-                                                    ) : isWork ? (
-                                                        <BriefcaseIcon className="w-3.5 h-3.5 text-white" />
-                                                    ) : (
-                                                        <AcademicCapIcon className="w-3.5 h-3.5 text-white" />
-                                                    )}
-                                                </div>
-                                                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">
-                                                    {item.endDate === 'Present' ? 'Present' : new Date(item.endDate).getFullYear()}
+                                            <div className="flex items-center justify-between gap-2 mb-2">
+                                                <span className="text-[11px] font-mono text-[var(--pf-subtle)]">
+                                                    {formatYear(item.startDate)} – {formatYear(item.endDate)}
+                                                </span>
+                                                <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--pf-accent)]">
+                                                    {isWork ? 'Work' : 'Edu'}
                                                 </span>
                                             </div>
-                                            <h4 className="text-sm font-bold truncate text-gray-950 dark:text-white">
-                                                {isWork ? item.position : item.degree}
-                                            </h4>
-                                            <p className="text-xs truncate text-primary-600 dark:text-primary-400 font-medium">
-                                                {isWork ? item.company : item.institution}
+                                            <h3 className="text-sm font-semibold text-[var(--pf-ink)] truncate">
+                                                {role}
+                                            </h3>
+                                            <p className="text-xs text-[var(--pf-muted)] truncate mt-0.5">
+                                                {org}
                                             </p>
                                         </button>
                                     );
                                 })}
                             </div>
 
-                            {/* Desktop Vertical Timeline Navigator */}
-                            <div className="hidden md:flex flex-col relative pl-6 border-l-2 border-gray-200 dark:border-gray-800 space-y-6">
+                            {/* Desktop Vertical Bento Stack */}
+                            <div className="hidden md:flex flex-col gap-3">
                                 {filteredTimeline.map((item, index) => {
                                     const isWork = item.type === 'work';
-                                    const isActive = activeIndex === index;
-                                    return (
-                                        <div
-                                            key={`${item.type}-${item.id}`}
-                                            className="relative flex items-start group"
-                                        >
-                                            {/* Pulsing Active Node dot on timeline line */}
-                                            <div className="absolute -left-[33px] top-4 z-20">
-                                                <button
-                                                    onClick={() => setActiveIndex(index)}
-                                                    className="focus:outline-none cursor-pointer"
-                                                >
-                                                    {isActive ? (
-                                                        <span className="relative flex h-4 w-4">
-                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-4 w-4 bg-gradient-to-r from-primary-500 to-accent-500"></span>
-                                                        </span>
-                                                    ) : (
-                                                        <span className="block h-3.5 w-3.5 rounded-full border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 group-hover:border-primary-500 transition-colors duration-300" />
-                                                    )}
-                                                </button>
-                                            </div>
+                                    const isActive = safeIndex === index;
+                                    const org = isWork ? item.company : item.institution;
+                                    const role = isWork ? item.position : item.degree;
 
-                                            {/* Button card */}
-                                            <button
-                                                onClick={() => setActiveIndex(index)}
-                                                className={`w-full text-left p-4 rounded-xl border transition-all duration-300 cursor-pointer ${
-                                                    isActive
-                                                        ? 'bg-white dark:bg-gray-900 border-primary-500/30 shadow-lg ring-1 ring-primary-500/10 translate-x-1'
-                                                        : 'bg-transparent border-transparent hover:bg-gray-100/50 dark:hover:bg-gray-900/30'
-                                                }`}
-                                            >
-                                                <span className="text-xs font-bold text-gray-400 dark:text-gray-500 block mb-1">
-                                                    {new Date(item.startDate).getFullYear()} - {item.endDate === 'Present' ? 'Present' : new Date(item.endDate).getFullYear()}
+                                    return (
+                                        <button
+                                            key={`${item.type}-${item.id}`}
+                                            type="button"
+                                            onClick={() => setActiveIndex(index)}
+                                            aria-current={isActive ? 'step' : undefined}
+                                            className={`pf-bento w-full text-left p-4 transition-colors duration-150 cursor-pointer ${
+                                                isActive
+                                                    ? 'border-[var(--pf-border-strong)] bg-[var(--pf-surface)]'
+                                                    : 'bg-[var(--pf-bg)] hover:border-[var(--pf-border-strong)]'
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between gap-2 mb-2">
+                                                <span className="text-[11px] font-mono text-[var(--pf-subtle)]">
+                                                    {formatYear(item.startDate)} – {formatYear(item.endDate)}
                                                 </span>
-                                                <div className="flex items-center gap-3">
-                                                    {item.logo && (
-                                                        <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-0.5 shrink-0 flex items-center justify-center overflow-hidden">
-                                                            <img src={item.logo} alt="" className="w-full h-full object-contain" />
-                                                        </div>
-                                                    )}
-                                                    <div className="min-w-0">
-                                                        <h4 className={`text-base font-bold truncate transition-colors ${
-                                                            isActive ? 'text-gray-950 dark:text-white' : 'text-gray-700 dark:text-gray-400'
-                                                        }`}>
-                                                            {isWork ? item.position : item.degree}
-                                                        </h4>
-                                                        <p className="text-sm text-primary-600 dark:text-primary-400 font-semibold font-display truncate">
-                                                            {isWork ? item.company : item.institution}
-                                                        </p>
-                                                    </div>
+                                                <span
+                                                    className={`px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-wider border ${
+                                                        isActive
+                                                            ? 'bg-[var(--pf-surface-2)] text-[var(--pf-accent)] border-[var(--pf-border-strong)]'
+                                                            : 'bg-transparent text-[var(--pf-subtle)] border-[var(--pf-border)]'
+                                                    }`}
+                                                >
+                                                    {isWork ? 'Work' : 'Edu'}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <OrgLogo logo={item.logo} name={org} isWork={isWork} />
+                                                <div className="min-w-0">
+                                                    <h3
+                                                        className={`text-sm font-semibold truncate ${
+                                                            isActive ? 'text-[var(--pf-ink)]' : 'text-[var(--pf-muted)]'
+                                                        }`}
+                                                    >
+                                                        {role}
+                                                    </h3>
+                                                    <p className="text-xs text-[var(--pf-muted)] truncate mt-0.5">
+                                                        {org}
+                                                    </p>
                                                 </div>
-                                            </button>
-                                        </div>
+                                            </div>
+                                        </button>
                                     );
                                 })}
                             </div>
                         </div>
 
-                        {/* RIGHT: Story Details Card */}
-                        <div className="md:col-span-8 w-full relative min-h-[500px]">
+                        {/* Right Detail Bento Card */}
+                        <div className="md:col-span-8 w-full">
                             <AnimatePresence mode="wait">
-                                {filteredTimeline.map((item, index) => {
-                                    if (activeIndex !== index) return null;
-                                    const isWork = item.type === 'work';
-                                    const achievements = getAchievements(item);
-                                    
+                                {(() => {
+                                    const isWork = currentItem.type === 'work';
+                                    const org = isWork ? currentItem.company : currentItem.institution;
+                                    const role = isWork ? currentItem.position : currentItem.degree;
+                                    const field = !isWork ? currentItem.field : '';
+                                    const achievements = getAchievements(currentItem);
+
                                     return (
                                         <motion.div
-                                            key={`${item.type}-${item.id}`}
-                                            initial={{ opacity: 0, x: 50, scale: 0.98 }}
-                                            animate={{ opacity: 1, x: 0, scale: 1 }}
-                                            exit={{ opacity: 0, x: -50, scale: 0.98 }}
-                                            transition={{ duration: 0.4, ease: 'easeOut' }}
-                                            drag="x"
-                                            dragConstraints={{ left: 0, right: 0 }}
-                                            dragElastic={0.25}
-                                            onDragEnd={handleDragEnd}
-                                            className="card shadow-2xl p-5 sm:p-6 md:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 touch-pan-y cursor-grab active:cursor-grabbing select-none"
+                                            key={`${currentItem.type}-${currentItem.id}`}
+                                            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+                                            transition={{ duration: 0.18, ease: 'easeOut' }}
+                                            className="pf-bento p-6 sm:p-8"
                                         >
-                                            {/* Story Progress Indicators (Instagram-style) */}
-                                            <div className="flex gap-1.5 w-full mb-6">
-                                                {filteredTimeline.map((_, dotIndex) => (
-                                                    <div
-                                                        key={dotIndex}
-                                                        className="h-1 flex-1 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden cursor-pointer"
+                                            {/* Progress Segments & Controls */}
+                                            <div className="flex gap-1.5 w-full mb-5" role="group" aria-label="Timeline steps">
+                                                {filteredTimeline.map((stepItem, dotIndex) => (
+                                                    <button
+                                                        key={`${stepItem.type}-${stepItem.id}-seg`}
+                                                        type="button"
                                                         onClick={() => setActiveIndex(dotIndex)}
+                                                        aria-label={`Jump to step ${dotIndex + 1}`}
+                                                        className="h-1.5 flex-1 rounded-full bg-[var(--pf-border)] cursor-pointer overflow-hidden"
                                                     >
-                                                        <motion.div
-                                                            initial={{ width: 0 }}
-                                                            animate={{ 
-                                                                width: activeIndex === dotIndex 
-                                                                    ? '100%' 
-                                                                    : activeIndex > dotIndex 
-                                                                        ? '100%' 
-                                                                        : '0%' 
-                                                            }}
-                                                            transition={{ duration: 0.3 }}
-                                                            className="h-full bg-gradient-to-r from-primary-500 to-accent-500 rounded-full"
+                                                        <span
+                                                            className={`block h-full rounded-full transition-colors duration-150 ${
+                                                                dotIndex <= safeIndex ? 'bg-[var(--pf-ink)]' : 'bg-transparent'
+                                                            }`}
                                                         />
-                                                    </div>
+                                                    </button>
                                                 ))}
                                             </div>
 
-                                            {/* Top Control Bar */}
-                                            <div className="flex justify-between items-center mb-6">
-                                                <span className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">
-                                                    Step {index + 1} of {filteredTimeline.length}
+                                            <div className="flex items-center justify-between gap-4 pb-5 mb-6 border-b border-[var(--pf-border)]">
+                                                <span className="text-xs font-mono text-[var(--pf-subtle)]">
+                                                    {String(safeIndex + 1).padStart(2, '0')} /{' '}
+                                                    {String(filteredTimeline.length).padStart(2, '0')}
                                                 </span>
-                                                
-                                                {/* Prev/Next buttons */}
-                                                <div className="flex gap-2">
+
+                                                <div className="flex items-center gap-2">
                                                     <button
-                                                        disabled={activeIndex === 0}
-                                                        onClick={() => setActiveIndex((prev) => prev - 1)}
-                                                        className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent transition cursor-pointer"
+                                                        type="button"
+                                                        disabled={safeIndex === 0}
+                                                        onClick={() => setActiveIndex((prev) => Math.max(0, prev - 1))}
+                                                        aria-label="Previous timeline entry"
+                                                        className="w-9 h-9 rounded-lg border border-[var(--pf-border)] bg-[var(--pf-bg)] hover:border-[var(--pf-border-strong)] disabled:opacity-35 disabled:cursor-not-allowed flex items-center justify-center text-[var(--pf-ink)] transition-colors cursor-pointer"
                                                     >
                                                         <ChevronLeftIcon className="w-4 h-4" />
                                                     </button>
                                                     <button
-                                                        disabled={activeIndex === filteredTimeline.length - 1}
-                                                        onClick={() => setActiveIndex((prev) => prev + 1)}
-                                                        className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent transition cursor-pointer"
+                                                        type="button"
+                                                        disabled={safeIndex === filteredTimeline.length - 1}
+                                                        onClick={() =>
+                                                            setActiveIndex((prev) =>
+                                                                Math.min(filteredTimeline.length - 1, prev + 1)
+                                                            )
+                                                        }
+                                                        aria-label="Next timeline entry"
+                                                        className="w-9 h-9 rounded-lg border border-[var(--pf-border)] bg-[var(--pf-bg)] hover:border-[var(--pf-border-strong)] disabled:opacity-35 disabled:cursor-not-allowed flex items-center justify-center text-[var(--pf-ink)] transition-colors cursor-pointer"
                                                     >
                                                         <ChevronRightIcon className="w-4 h-4" />
                                                     </button>
                                                 </div>
                                             </div>
 
-                                            {/* Header */}
-                                            <div className="flex items-start gap-4 mb-6">
-                                                <div className={`w-14 h-14 rounded-2xl ${
-                                                    item.logo 
-                                                        ? 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2' 
-                                                        : `bg-gradient-to-r ${isWork ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-pink-500'}`
-                                                } flex items-center justify-center shadow-lg transform -rotate-2 hover:rotate-0 transition-transform duration-300 flex-shrink-0 overflow-hidden`}>
-                                                    {item.logo ? (
-                                                        <img src={item.logo} alt={isWork ? item.company : item.institution} className="w-full h-full object-contain" />
-                                                    ) : isWork ? (
-                                                        <BriefcaseIcon className="w-8 h-8 text-white" />
-                                                    ) : (
-                                                        <AcademicCapIcon className="w-8 h-8 text-white" />
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-2xl md:text-3xl font-bold font-display tracking-tight text-gray-950 dark:text-white">
-                                                        {isWork ? item.position : item.degree}
+                                            {/* Role & Organization Header */}
+                                            <div className="flex items-start gap-4 mb-5">
+                                                <OrgLogo
+                                                    logo={currentItem.logo}
+                                                    name={org}
+                                                    isWork={isWork}
+                                                    size="md"
+                                                />
+                                                <div className="min-w-0">
+                                                    <h3 className="text-xl sm:text-2xl font-display font-semibold tracking-tight text-[var(--pf-ink)]">
+                                                        {role}
                                                     </h3>
-                                                    <p className="text-lg text-primary-600 dark:text-primary-400 font-semibold font-display">
-                                                        {isWork ? item.company : item.institution}
+                                                    <p className="text-sm sm:text-base font-medium text-[var(--pf-accent)] mt-0.5">
+                                                        {org}
+                                                        {field ? ` · ${field}` : ''}
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            {/* Metadata Pills */}
-                                            <div className="flex flex-wrap gap-2.5 mb-6">
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50 text-xs font-bold text-gray-600 dark:text-gray-400 shadow-sm">
-                                                    <MapPinIcon className="w-3.5 h-3.5 text-primary-500" />
-                                                    {item.location}
-                                                </span>
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50 text-xs font-bold text-gray-600 dark:text-gray-400 shadow-sm">
-                                                    <CalendarIcon className="w-3.5 h-3.5 text-accent-500" />
-                                                    {new Date(item.startDate).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                    })}{' '}
-                                                    -{' '}
-                                                    {item.endDate === 'Present'
-                                                        ? 'Present'
-                                                        : new Date(item.endDate).toLocaleDateString('en-US', {
-                                                            year: 'numeric',
-                                                            month: 'short',
-                                                        })}
+                                            {/* Date & Location */}
+                                            <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono text-[var(--pf-muted)] mb-7">
+                                                {currentItem.location && (
+                                                    <span className="pf-bento-subtle px-3 py-1.5 inline-flex items-center gap-1.5">
+                                                        <MapPinIcon className="w-3.5 h-3.5 text-[var(--pf-subtle)]" aria-hidden="true" />
+                                                        <span>{currentItem.location}</span>
+                                                    </span>
+                                                )}
+                                                <span className="pf-bento-subtle px-3 py-1.5 inline-flex items-center gap-1.5">
+                                                    <CalendarIcon className="w-3.5 h-3.5 text-[var(--pf-subtle)]" aria-hidden="true" />
+                                                    <span>
+                                                        {formatMonthYear(currentItem.startDate)} –{' '}
+                                                        {formatMonthYear(currentItem.endDate)}
+                                                    </span>
                                                 </span>
                                             </div>
 
-                                            {/* Achievements (Staggered Animation list) */}
+                                            {/* Achievements */}
                                             {achievements.length > 0 && (
-                                                <div className="mb-8">
-                                                    <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">
-                                                        Key Achievements & Responsibilities
+                                                <div className="mb-7">
+                                                    <h4 className="text-xs font-mono uppercase tracking-[0.16em] text-[var(--pf-subtle)] mb-3.5">
+                                                        Key Responsibilities &amp; Outcomes
                                                     </h4>
-                                                    <motion.ul
-                                                        variants={containerVariants}
-                                                        initial="hidden"
-                                                        animate="visible"
-                                                        className="space-y-3.5"
-                                                    >
+                                                    <ul className="space-y-2.5">
                                                         {achievements.map((achievement, bulletIndex) => (
-                                                            <motion.li
+                                                            <li
                                                                 key={bulletIndex}
-                                                                variants={itemVariants}
-                                                                className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 border border-gray-100/50 dark:border-gray-800/30 transition-all duration-300 text-sm text-gray-700 dark:text-gray-300 leading-relaxed shadow-sm group"
+                                                                className="flex items-start gap-3 text-sm text-[var(--pf-muted)] leading-relaxed"
                                                             >
-                                                                <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-500 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                                                                    <CheckIcon className="w-4 h-4" />
-                                                                </div>
+                                                                <span
+                                                                    aria-hidden="true"
+                                                                    className="mt-2 w-1.5 h-1.5 rounded-full bg-[var(--pf-accent)] shrink-0"
+                                                                />
                                                                 <span>{achievement}</span>
-                                                            </motion.li>
+                                                            </li>
                                                         ))}
-                                                    </motion.ul>
+                                                    </ul>
                                                 </div>
                                             )}
 
-                                            {/* Skills collection */}
-                                            {item.skills && item.skills.length > 0 && (
-                                                <div>
-                                                    <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
-                                                        Skills & Technologies Used
+                                            {/* Skills */}
+                                            {currentItem.skills && currentItem.skills.length > 0 && (
+                                                <div className="pt-5 border-t border-[var(--pf-border)]">
+                                                    <h4 className="text-xs font-mono uppercase tracking-[0.16em] text-[var(--pf-subtle)] mb-3">
+                                                        Technologies &amp; Focus Areas
                                                     </h4>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {item.skills.map((skill, tagIndex) => (
-                                                            <motion.span
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {currentItem.skills.map((skill) => (
+                                                            <span
                                                                 key={skill}
-                                                                initial={{ opacity: 0, scale: 0.8 }}
-                                                                animate={{ opacity: 1, scale: 1 }}
-                                                                transition={{ delay: tagIndex * 0.04 }}
-                                                                className="text-xs font-bold px-3 py-1.5 rounded-lg bg-primary-500/5 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/10 hover:border-primary-500/30 hover:bg-primary-500/10 transition-all duration-300"
+                                                                className="px-2.5 py-1 rounded-lg text-xs font-mono bg-[var(--pf-surface-2)] text-[var(--pf-muted)] border border-[var(--pf-border)]"
                                                             >
                                                                 {skill}
-                                                            </motion.span>
+                                                            </span>
                                                         ))}
                                                     </div>
                                                 </div>
                                             )}
                                         </motion.div>
                                     );
-                                })}
+                                })()}
                             </AnimatePresence>
                         </div>
                     </div>

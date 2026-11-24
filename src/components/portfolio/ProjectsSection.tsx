@@ -1,9 +1,63 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
-import { XMarkIcon, ArrowTopRightOnSquareIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import {
+    XMarkIcon,
+    ArrowTopRightOnSquareIcon,
+    ChevronDownIcon,
+    ChevronUpIcon,
+} from '@heroicons/react/24/outline';
 import type { Project } from '../../types/portfolio';
-import { normalizeCategory, isProjectInFilter, getCategoryBadgeStyle } from '../../utils/projectUtils';
+import { normalizeCategory, isProjectInFilter } from '../../utils/projectUtils';
+
+const isPlaceholderCopy = (text?: string): boolean => {
+    if (!text) return true;
+    const trimmed = text.trim();
+    if (!trimmed) return true;
+    return (
+        /^(project\s+)?(short\s+|long\s+)?description\.?$/i.test(trimmed) ||
+        /^lorem ipsum/i.test(trimmed) ||
+        /^(add|enter)\s+(a\s+)?(project\s+)?description/i.test(trimmed)
+    );
+};
+
+const getProjectSummary = (project: Project): string => {
+    if (!isPlaceholderCopy(project.description)) return project.description.trim();
+    if (!isPlaceholderCopy(project.longDescription)) return project.longDescription.trim();
+    return '';
+};
+
+const getProjectLongCopy = (project: Project): string => {
+    if (!isPlaceholderCopy(project.longDescription)) return project.longDescription.trim();
+    if (!isPlaceholderCopy(project.description)) return project.description.trim();
+    return '';
+};
+
+const ProjectThumb: React.FC<{ src?: string; alt: string; className?: string }> = ({
+    src,
+    alt,
+    className = '',
+}) => {
+    const [failed, setFailed] = useState(false);
+
+    if (!src || failed) {
+        return (
+            <div className="w-full h-full flex items-center justify-center bg-[var(--pf-surface-2)] text-xs font-mono text-[var(--pf-subtle)]">
+                No preview image
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={src}
+            alt={alt}
+            loading="lazy"
+            className={className}
+            onError={() => setFailed(true)}
+        />
+    );
+};
 
 export const ProjectsSection: React.FC = () => {
     const { data } = usePortfolioData();
@@ -11,10 +65,28 @@ export const ProjectsSection: React.FC = () => {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [filter, setFilter] = useState<string>('all');
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
+    const prefersReducedMotion = useReducedMotion();
 
     const INITIAL_LIMIT = 12;
 
-    // Sort projects: featured first, then by date descending (most recent first)
+    useEffect(() => {
+        if (!selectedProject) return;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setSelectedProject(null);
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener('keydown', onKeyDown);
+        };
+    }, [selectedProject]);
+
     const sortedProjects = [...(projects || [])].sort((a, b) => {
         if (a.featured !== b.featured) {
             return a.featured ? -1 : 1;
@@ -22,7 +94,6 @@ export const ProjectsSection: React.FC = () => {
         return (b.date || '').localeCompare(a.date || '');
     });
 
-    // Dynamically calculate counts for all categories present in existing projects
     const categoryCounts = new Map<string, number>();
     sortedProjects.forEach((p) => {
         const cat = normalizeCategory(p.category);
@@ -31,7 +102,6 @@ export const ProjectsSection: React.FC = () => {
         }
     });
 
-    // Sort categories professionally: highest project count first, then alphabetical
     const sortedCategories = Array.from(categoryCounts.entries())
         .filter(([, count]) => count > 0)
         .sort((a, b) => {
@@ -47,68 +117,80 @@ export const ProjectsSection: React.FC = () => {
         }));
 
     const tabs = [
-        { id: 'all', label: 'All (Recent)', count: sortedProjects.length },
+        { id: 'all', label: 'All', count: sortedProjects.length },
         ...sortedCategories,
     ];
 
-    // Safe active filter fallback
     const activeFilter = tabs.some((t) => t.id === filter) ? filter : 'all';
-
-    // Filter projects according to selected tab
-    const filteredProjects = sortedProjects.filter((p) => isProjectInFilter(p.category, activeFilter));
-
-    // Handle 12-item default limit with expand/collapse
-    const displayedProjects = isExpanded ? filteredProjects : filteredProjects.slice(0, INITIAL_LIMIT);
+    const filteredProjects = sortedProjects.filter((p) =>
+        isProjectInFilter(p.category, activeFilter)
+    );
+    const displayedProjects = isExpanded
+        ? filteredProjects
+        : filteredProjects.slice(0, INITIAL_LIMIT);
     const hasMore = filteredProjects.length > INITIAL_LIMIT;
 
     const handleFilterChange = (tabId: string) => {
         setFilter(tabId);
-        setIsExpanded(false); // Reset expansion to default 12 on tab switch
+        setIsExpanded(false);
     };
 
+    const fadeProps = prefersReducedMotion
+        ? {}
+        : {
+              initial: { opacity: 0, y: 12 },
+              whileInView: { opacity: 1, y: 0 },
+              viewport: { once: true, margin: '-40px' },
+              transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
+          };
+
     return (
-        <section id="projects" className="section-padding bg-gray-50 dark:bg-gray-900/50">
-            <div className="max-w-7xl mx-auto">
+        <section id="projects" className="pf-section" aria-labelledby="projects-heading">
+            <div className="pf-container">
+                {/* Header & Filters */}
                 <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center mb-16"
+                    {...fadeProps}
+                    className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10 sm:mb-12"
                 >
-                    <h2 className="text-4xl md:text-5xl font-bold font-display mb-4">
-                        My <span className="gradient-text">Projects</span>
-                    </h2>
-                    <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
-                        Explore my recent work and creative endeavors across personal, academic, and corporate domains
-                    </p>
+                    <div className="space-y-3">
+                        <p className="pf-eyebrow">
+                            <span className="pf-eyebrow-index">03</span>
+                            <span>/</span>
+                            <span>Selected Work</span>
+                        </p>
+                        <h2 id="projects-heading" className="pf-heading text-3xl sm:text-4xl lg:text-[2.75rem]">
+                            Projects
+                        </h2>
+                        <p className="pf-lead text-sm sm:text-base max-w-xl">
+                            Selected engineering work across personal, academic, and client environments.
+                        </p>
+                    </div>
 
-                    {/* Filter Tabs: 2-by-2 responsive grid on mobile, flex-wrap centered pills on desktop */}
-                    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:items-center sm:gap-3 max-w-md sm:max-w-4xl mx-auto mb-10 px-2 sm:px-0">
-                        {tabs.map((tab, index) => {
+                    {/* Filter Tabs */}
+                    <div
+                        className="flex flex-wrap gap-2"
+                        role="tablist"
+                        aria-label="Filter projects by category"
+                    >
+                        {tabs.map((tab) => {
                             const isActive = activeFilter === tab.id;
-                            const isAll = tab.id === 'all';
-                            // If 'all' is at the top, it spans both columns on mobile (col-span-2)
-                            // If remaining categories count is odd, the last item also spans 2 to keep rows balanced
-                            const isLastOdd = !isAll && tabs.length % 2 === 0 && index === tabs.length - 1;
-                            const colSpanClass = isAll || isLastOdd ? 'col-span-2 sm:col-span-1' : 'col-span-1';
-
                             return (
                                 <button
                                     key={tab.id}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={isActive}
                                     onClick={() => handleFilterChange(tab.id)}
-                                    className={`w-full sm:w-auto min-h-[42px] px-2.5 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer select-none active:scale-95 ${colSpanClass} ${
+                                    className={`min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs sm:text-[13px] font-medium border transition-colors duration-150 inline-flex items-center gap-2 cursor-pointer ${
                                         isActive
-                                            ? 'bg-gradient-to-r from-primary-600 to-accent-600 text-white shadow-sm shadow-primary-500/25'
-                                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                            ? 'bg-[var(--pf-ink)] text-[var(--pf-bg)] border-[var(--pf-ink)]'
+                                            : 'bg-[var(--pf-surface)] text-[var(--pf-muted)] border-[var(--pf-border)] hover:border-[var(--pf-border-strong)] hover:text-[var(--pf-ink)]'
                                     }`}
                                 >
-                                    <span className="truncate">{tab.label}</span>
+                                    <span>{tab.label}</span>
                                     <span
-                                        className={`shrink-0 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-semibold ${
-                                            isActive
-                                                ? 'bg-white/20 text-white'
-                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                                        className={`text-[11px] font-mono ${
+                                            isActive ? 'opacity-80' : 'text-[var(--pf-subtle)]'
                                         }`}
                                     >
                                         {tab.count}
@@ -119,243 +201,301 @@ export const ProjectsSection: React.FC = () => {
                     </div>
                 </motion.div>
 
-                {/* Projects Grid */}
+                {/* Bento Grid */}
                 {displayedProjects.length > 0 ? (
-                    <motion.div layout className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
-                        <AnimatePresence>
-                            {displayedProjects.map((project, index) => {
-                                const badge = getCategoryBadgeStyle(project.category);
-                                return (
-                                    <motion.div
-                                        key={project.id}
-                                        layout
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        transition={{ delay: Math.min(index * 0.05, 0.4) }}
-                                        whileHover={{ y: -6 }}
-                                        onClick={() => setSelectedProject(project)}
-                                        className="card-hover cursor-pointer group overflow-hidden flex flex-col justify-between p-3 sm:p-6 rounded-xl sm:rounded-2xl"
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                        {displayedProjects.map((project, index) => {
+                            const summary = getProjectSummary(project);
+                            const categoryLabel = normalizeCategory(project.category);
+                            const isLeadBento =
+                                index === 0 && project.featured && activeFilter === 'all';
+
+                            return (
+                                <article
+                                    key={project.id}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => setSelectedProject(project)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            setSelectedProject(project);
+                                        }
+                                    }}
+                                    className={`pf-bento overflow-hidden hover:border-[var(--pf-border-strong)] transition-colors duration-150 flex flex-col justify-between cursor-pointer group text-left ${
+                                        isLeadBento
+                                            ? 'lg:col-span-2 lg:grid lg:grid-cols-12 lg:items-stretch'
+                                            : ''
+                                    }`}
+                                >
+                                    {/* Thumbnail */}
+                                    <div
+                                        className={`bg-[var(--pf-surface-2)] overflow-hidden ${
+                                            isLeadBento
+                                                ? 'aspect-[16/10] lg:aspect-auto lg:col-span-7 border-b lg:border-b-0 lg:border-r border-[var(--pf-border)]'
+                                                : 'aspect-[16/10] w-full border-b border-[var(--pf-border)]'
+                                        }`}
                                     >
-                                        <div>
-                                            {/* Project Image */}
-                                            <div className="relative h-28 xs:h-36 sm:h-48 mb-2.5 sm:mb-4 -mx-3 -mt-3 sm:-mx-6 sm:-mt-6 overflow-hidden bg-gray-100 dark:bg-gray-800">
-                                                <img
-                                                    src={project.image}
-                                                    alt={project.title}
-                                                    loading="lazy"
-                                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                                {project.featured && (
-                                                    <div className="absolute top-2 right-2 sm:top-4 sm:right-4 px-2 sm:px-3 py-0.5 sm:py-1 bg-accent-500 text-white text-[9px] sm:text-xs font-semibold rounded-full shadow-xs">
-                                                        Featured
-                                                    </div>
-                                                )}
-                                                {project.date && (
-                                                    <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-4 px-1.5 sm:px-2 py-0.5 bg-black/60 backdrop-blur-xs text-white/90 text-[9px] sm:text-[11px] font-medium rounded-md">
-                                                        {project.date}
-                                                    </div>
-                                                )}
+                                        <ProjectThumb
+                                            src={project.image}
+                                            alt={project.title}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+
+                                    {/* Content + Footer */}
+                                    <div
+                                        className={`flex flex-col justify-between flex-1 ${
+                                            isLeadBento ? 'lg:col-span-5' : ''
+                                        }`}
+                                    >
+                                        <div className="p-5 sm:p-6">
+                                            {/* Metadata */}
+                                            <div className="flex items-center justify-between gap-2 mb-2.5 text-[11px] font-mono uppercase tracking-[0.14em] text-[var(--pf-subtle)]">
+                                                <span className="truncate">{categoryLabel}</span>
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    {project.featured && (
+                                                        <span className="px-2 py-0.5 rounded-md text-[10px] bg-[var(--pf-surface-2)] text-[var(--pf-accent)] border border-[var(--pf-border-strong)]">
+                                                            Featured
+                                                        </span>
+                                                    )}
+                                                    {project.date && <span>{project.date}</span>}
+                                                </div>
                                             </div>
 
-                                            {/* Category Tag Name Box */}
-                                            <div className="mb-1.5 sm:mb-2.5 flex items-center justify-between">
-                                                <span
-                                                    className={`text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 rounded-full font-medium border flex items-center gap-1 sm:gap-1.5 truncate ${badge.bg} ${badge.text} ${badge.border}`}
-                                                >
-                                                    <span className={`w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full ${badge.dot} shrink-0`} />
-                                                    <span className="truncate">{normalizeCategory(project.category)}</span>
-                                                </span>
-                                            </div>
-
-                                            {/* Project Info */}
-                                            <h3 className="text-xs xs:text-sm sm:text-lg font-bold mb-1 sm:mb-2 text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-1 sm:line-clamp-none">
+                                            {/* Title & Description */}
+                                            <h3
+                                                className={`font-display font-semibold text-[var(--pf-ink)] group-hover:text-[var(--pf-accent)] transition-colors leading-snug mb-2 ${
+                                                    isLeadBento ? 'text-xl sm:text-2xl' : 'text-lg'
+                                                }`}
+                                            >
                                                 {project.title}
                                             </h3>
-                                            <p className="text-gray-600 dark:text-gray-400 mb-2 sm:mb-4 line-clamp-2 text-[11px] sm:text-sm leading-relaxed">
-                                                {project.description}
-                                            </p>
+
+                                            {summary && (
+                                                <p
+                                                    className={`text-sm text-[var(--pf-muted)] leading-relaxed mb-4 ${
+                                                        isLeadBento ? 'line-clamp-3' : 'line-clamp-2'
+                                                    }`}
+                                                >
+                                                    {summary}
+                                                </p>
+                                            )}
 
                                             {/* Technologies */}
                                             {project.technologies && project.technologies.length > 0 && (
-                                                <div className="hidden xs:flex flex-wrap gap-1 sm:gap-1.5 mb-2.5 sm:mb-4">
-                                                    {project.technologies.slice(0, 3).map((tech, i) => (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {project.technologies.slice(0, 4).map((tech, i) => (
                                                         <span
-                                                            key={i}
-                                                            className="px-1.5 sm:px-2.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-[10px] sm:text-xs rounded-md"
+                                                            key={`${tech}-${i}`}
+                                                            className="px-2 py-0.5 rounded-lg text-[11px] font-mono bg-[var(--pf-surface-2)] text-[var(--pf-muted)] border border-[var(--pf-border)]"
                                                         >
                                                             {tech}
                                                         </span>
                                                     ))}
-                                                    {project.technologies.length > 3 && (
-                                                        <span className="px-1.5 sm:px-2.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-400 text-[10px] sm:text-xs rounded-md">
-                                                            +{project.technologies.length - 3}
+                                                    {project.technologies.length > 4 && (
+                                                        <span className="px-2 py-0.5 text-[11px] font-mono text-[var(--pf-subtle)]">
+                                                            +{project.technologies.length - 4}
                                                         </span>
                                                     )}
                                                 </div>
                                             )}
                                         </div>
 
-                                        {/* Links */}
-                                        <div className="flex flex-col xs:flex-row gap-1.5 sm:gap-3 pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-800">
-                                            {project.liveUrl && (
-                                                <a
-                                                    href={project.liveUrl}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-[11px] sm:text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1"
-                                                >
-                                                    Live Demo <ArrowTopRightOnSquareIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                                                </a>
-                                            )}
-                                            {project.githubUrl && (
-                                                <a
-                                                    href={project.githubUrl}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-[11px] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:underline flex items-center gap-1"
-                                                >
-                                                    GitHub <ArrowTopRightOnSquareIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                                                </a>
-                                            )}
+                                        {/* Card Footer Links */}
+                                        <div className="px-5 sm:px-6 py-3.5 border-t border-[var(--pf-border)] flex items-center justify-between gap-3 text-xs font-medium">
+                                            <div className="flex items-center gap-4">
+                                                {project.liveUrl && (
+                                                    <a
+                                                        href={project.liveUrl}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-[var(--pf-ink)] hover:text-[var(--pf-accent)] transition-colors inline-flex items-center gap-1"
+                                                    >
+                                                        <span>Live Demo</span>
+                                                        <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                                                    </a>
+                                                )}
+                                                {project.githubUrl && (
+                                                    <a
+                                                        href={project.githubUrl}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-[var(--pf-muted)] hover:text-[var(--pf-ink)] transition-colors inline-flex items-center gap-1"
+                                                    >
+                                                        <span>GitHub</span>
+                                                        <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                                                    </a>
+                                                )}
+                                            </div>
+
+                                            <span className="text-[var(--pf-muted)] group-hover:text-[var(--pf-ink)] transition-colors font-mono text-[11px] uppercase tracking-wider">
+                                                Details →
+                                            </span>
                                         </div>
-                                    </motion.div>
-                                );
-                            })}
-                        </AnimatePresence>
-                    </motion.div>
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
                 ) : (
-                    <div className="text-center py-16 bg-white dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">
-                            No projects found in this category yet.
+                    <div className="pf-bento p-12 text-center">
+                        <p className="text-sm text-[var(--pf-muted)]">
+                            No projects found in this category.
                         </p>
                     </div>
                 )}
 
-                {/* Expand / View All Projects Button - No glow effects */}
+                {/* Expand / Collapse Button */}
                 {hasMore && (
-                    <div className="mt-12 text-center flex flex-col items-center justify-center gap-3">
+                    <div className="mt-8 pf-bento p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <p className="text-xs font-mono text-[var(--pf-muted)]">
+                            Showing {displayedProjects.length} of {filteredProjects.length} projects
+                        </p>
                         <button
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 transition-colors cursor-pointer"
+                            type="button"
+                            onClick={() => setIsExpanded((prev) => !prev)}
+                            className="pf-btn-secondary"
                         >
                             {isExpanded ? (
                                 <>
-                                    <span>Show Less</span>
-                                    <ChevronUpIcon className="w-4 h-4" />
+                                    <span>Show Fewer</span>
+                                    <ChevronUpIcon className="w-4 h-4" aria-hidden="true" />
                                 </>
                             ) : (
                                 <>
                                     <span>View All Projects ({filteredProjects.length})</span>
-                                    <ChevronDownIcon className="w-4 h-4" />
+                                    <ChevronDownIcon className="w-4 h-4" aria-hidden="true" />
                                 </>
                             )}
                         </button>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Showing {displayedProjects.length} of {filteredProjects.length} projects
-                        </p>
                     </div>
                 )}
 
                 {/* Project Detail Modal */}
                 <AnimatePresence>
                     {selectedProject && (
-                        <div
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+                        <motion.div
+                            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0 }}
+                            transition={{ duration: 0.16 }}
+                            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
                             onClick={() => setSelectedProject(null)}
                         >
                             <motion.div
-                                initial={{ scale: 0.95, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.95, opacity: 0 }}
+                                role="dialog"
+                                aria-modal="true"
+                                aria-labelledby="project-modal-title"
+                                initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+                                transition={{ duration: 0.18, ease: 'easeOut' }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-5 sm:p-8 relative shadow-xl border border-gray-100 dark:border-gray-700"
+                                className="pf-bento border-[var(--pf-border-strong)] max-w-3xl w-full max-h-[90vh] overflow-y-auto relative"
                             >
-                                <button
-                                    onClick={() => setSelectedProject(null)}
-                                    className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer z-10"
-                                    aria-label="Close modal"
-                                >
-                                    <XMarkIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-                                </button>
+                                <div className="sticky top-0 z-10 flex items-center justify-between px-5 sm:px-7 py-4 bg-[var(--pf-surface)] border-b border-[var(--pf-border)]">
+                                    <div className="flex items-center gap-2.5 text-[11px] font-mono uppercase tracking-[0.16em] text-[var(--pf-muted)] min-w-0">
+                                        <span className="truncate">{normalizeCategory(selectedProject.category)}</span>
+                                        {selectedProject.date && (
+                                            <>
+                                                <span>·</span>
+                                                <span className="shrink-0">{selectedProject.date}</span>
+                                            </>
+                                        )}
+                                        {selectedProject.featured && (
+                                            <span className="px-2 py-0.5 rounded-md bg-[var(--pf-surface-2)] text-[var(--pf-accent)] border border-[var(--pf-border-strong)] shrink-0">
+                                                Featured
+                                            </span>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedProject(null)}
+                                        className="w-9 h-9 rounded-lg border border-[var(--pf-border)] bg-[var(--pf-bg)] hover:border-[var(--pf-border-strong)] flex items-center justify-center text-[var(--pf-ink)] transition-colors cursor-pointer shrink-0"
+                                        aria-label="Close project details"
+                                    >
+                                        <XMarkIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
 
-                                <div className="relative w-full h-48 sm:h-72 rounded-xl overflow-hidden mb-5 bg-gray-100 dark:bg-gray-900">
-                                    <img
-                                        src={selectedProject.image}
-                                        alt={selectedProject.title}
-                                        className="w-full h-full object-cover"
-                                    />
-                                    {selectedProject.featured && (
-                                        <div className="absolute top-4 left-4 px-3 py-1 bg-accent-500 text-white text-xs font-semibold rounded-full shadow-xs">
-                                            Featured Project
+                                <div className="p-5 sm:p-7 space-y-6">
+                                    <div className="aspect-[16/9] w-full rounded-xl bg-[var(--pf-surface-2)] border border-[var(--pf-border)] overflow-hidden">
+                                        <ProjectThumb
+                                            src={selectedProject.image}
+                                            alt={selectedProject.title}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <h3
+                                            id="project-modal-title"
+                                            className="text-2xl sm:text-3xl font-display font-semibold text-[var(--pf-ink)] tracking-tight mb-3"
+                                        >
+                                            {selectedProject.title}
+                                        </h3>
+
+                                        {getProjectLongCopy(selectedProject) ? (
+                                            <p className="text-sm sm:text-base text-[var(--pf-muted)] leading-relaxed whitespace-pre-line">
+                                                {getProjectLongCopy(selectedProject)}
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm text-[var(--pf-subtle)] italic">
+                                                Detailed project summary has not been added yet.
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {selectedProject.technologies && selectedProject.technologies.length > 0 && (
+                                        <div>
+                                            <h4 className="text-xs font-mono uppercase tracking-[0.16em] text-[var(--pf-subtle)] mb-3">
+                                                Technologies
+                                            </h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedProject.technologies.map((tech, i) => (
+                                                    <span
+                                                        key={`${tech}-${i}`}
+                                                        className="px-2.5 py-1 rounded-lg text-xs font-mono bg-[var(--pf-surface-2)] text-[var(--pf-ink)] border border-[var(--pf-border)]"
+                                                    >
+                                                        {tech}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {(selectedProject.liveUrl || selectedProject.githubUrl) && (
+                                        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[var(--pf-border)]">
+                                            {selectedProject.liveUrl && (
+                                                <a
+                                                    href={selectedProject.liveUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="pf-btn-primary w-full sm:w-auto"
+                                                >
+                                                    <span>View Live Demo</span>
+                                                    <ArrowTopRightOnSquareIcon className="w-4 h-4" aria-hidden="true" />
+                                                </a>
+                                            )}
+                                            {selectedProject.githubUrl && (
+                                                <a
+                                                    href={selectedProject.githubUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="pf-btn-secondary w-full sm:w-auto"
+                                                >
+                                                    <span>Source Code</span>
+                                                    <ArrowTopRightOnSquareIcon className="w-4 h-4" aria-hidden="true" />
+                                                </a>
+                                            )}
                                         </div>
                                     )}
                                 </div>
-
-                                <div className="flex flex-wrap items-center gap-2 mb-3">
-                                    <span
-                                        className={`text-xs px-2.5 py-0.5 rounded-full font-medium border flex items-center gap-1.5 ${getCategoryBadgeStyle(selectedProject.category).bg} ${getCategoryBadgeStyle(selectedProject.category).text} ${getCategoryBadgeStyle(selectedProject.category).border}`}
-                                    >
-                                        <span className={`w-1.5 h-1.5 rounded-full ${getCategoryBadgeStyle(selectedProject.category).dot}`} />
-                                        {normalizeCategory(selectedProject.category)}
-                                    </span>
-                                    {selectedProject.date && (
-                                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                                            {selectedProject.date}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <h2 className="text-2xl sm:text-3xl font-bold font-display mb-3 text-gray-900 dark:text-gray-100">
-                                    {selectedProject.title}
-                                </h2>
-                                <p className="text-gray-600 dark:text-gray-300 mb-6 text-base leading-relaxed">
-                                    {selectedProject.longDescription || selectedProject.description}
-                                </p>
-
-                                <div className="mb-6">
-                                    <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
-                                        Technologies Used
-                                    </h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedProject.technologies.map((tech, i) => (
-                                            <span
-                                                key={i}
-                                                className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium text-xs rounded-full border border-gray-200 dark:border-gray-600"
-                                            >
-                                                {tech}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                    {selectedProject.liveUrl && (
-                                        <a
-                                            href={selectedProject.liveUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="btn-primary flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
-                                        >
-                                            View Live Demo <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-                                        </a>
-                                    )}
-                                    {selectedProject.githubUrl && (
-                                        <a
-                                            href={selectedProject.githubUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="btn-secondary flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
-                                        >
-                                            Source Code <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-                                        </a>
-                                    )}
-                                </div>
                             </motion.div>
-                        </div>
+                        </motion.div>
                     )}
                 </AnimatePresence>
             </div>

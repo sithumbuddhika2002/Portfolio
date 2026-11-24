@@ -1,0 +1,184 @@
+.portfolio-public {
+  --pf-bg: #F6F5F0;
+  --pf-bg-alt: #EFECE6;
+  --pf-surface: #FFFFFF;
+  --pf-surface-2: #EAE7E0;
+  --pf-ink: #121418;
+  --pf-muted: #525660;
+  --pf-subtle: #666B75;
+  --pf-border: #DDDAD2;
+  --pf-border-strong: #B8B4AA;
+  --pf-accent: #5C4F8A;
+  --pf-btn-primary-bg: #121418;
+  --pf-btn-primary-ink: #F6F5F0;
+  --pf-btn-primary-hover: #252932;
+  --pf-btn-secondary-ink: #121418;
+  --pf-btn-secondary-border: #9A968C;
+  --pf-btn-secondary-hover: #EAE7E0;
+  --pf-focus: #121418;
+  background-color: var(--pf-bg);
+  color: var(--pf-ink);
+}
+
+.dark .portfolio-public {
+  --pf-bg: #090B0F;
+  --pf-bg-alt: #0C0F14;
+  --pf-surface: #11151B;
+  --pf-surface-2: #191E26;
+  --pf-ink: #E5E5E1;
+  --pf-muted: #A7A9AF;
+  --pf-subtle: #7B808A;
+  --pf-border: #232830;
+  --pf-border-strong: #353B45;
+  --pf-accent: #9A8FC2;
+  --pf-btn-primary-bg: #E5E5E1;
+  --pf-btn-primary-ink: #090B0F;
+  --pf-btn-primary-hover: #FFFFFF;
+  --pf-btn-secondary-ink: #E5E5E1;
+  --pf-btn-secondary-border: #505258;
+  --pf-btn-secondary-hover: #191E26;
+  --pf-focus: #E5E5E1;
+}
+
+.portfolio-public .pf-section {
+  padding: clamp(4.5rem, 8vw, 7rem) clamp(1.25rem, 4vw, 4.5rem);
+  background-color: var(--pf-bg);
+  color: var(--pf-ink);
+  border-top: 1px solid var(--pf-border);
+}
+
+.portfolio-public .pf-section--alt {
+  background-color: var(--pf-bg-alt);
+}
+
+.portfolio-public .pf-container {
+  max-width: 78rem;
+  margin-inline: auto;
+}
+
+.portfolio-public .pf-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--pf-muted);
+}
+
+.portfolio-public .pf-eyebrow-index {
+  color: var(--pf-accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.14em;
+}
+
+.portfolio-public .pf-heading {
+  font-family: Outfit, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--pf-ink);
+}
+
+.portfolio-public .pf-lead {
+  color: var(--pf-muted);
+  line-height: 1.65;
+}
+
+.portfolio-public .pf-panel {
+  background-color: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: 1rem;
+}
+
+.portfolio-public .pf-bento {
+  background-color: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: 1rem;
+  transition: border-color 150ms ease;
+}
+
+.portfolio-public .pf-bento-subtle {
+  background-color: var(--pf-surface-2);
+  border: 1px solid var(--pf-border);
+  border-radius: 0.75rem;
+}
+
+.portfolio-public .pf-btn-primary,
+.portfolio-public .pf-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.7rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 120ms ease;
+}
+
+.portfolio-public .pf-btn-primary {
+  background-color: var(--pf-btn-primary-bg);
+  color: var(--pf-btn-primary-ink);
+  border: 1px solid var(--pf-btn-primary-bg);
+}
+
+.portfolio-public .pf-btn-primary:hover {
+  background-color: var(--pf-btn-primary-hover);
+  border-color: var(--pf-btn-primary-hover);
+}
+
+.portfolio-public .pf-btn-secondary {
+  background-color: transparent;
+  color: var(--pf-btn-secondary-ink);
+  border: 1px solid var(--pf-btn-secondary-border);
+}
+
+.portfolio-public .pf-btn-secondary:hover {
+  background-color: var(--pf-btn-secondary-hover);
+  border-color: var(--pf-border-strong);
+}
+
+.portfolio-public .pf-btn-primary:active,
+.portfolio-public .pf-btn-secondary:active {
+  transform: translateY(1px);
+}
+
+.portfolio-public .pf-input {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  background-color: var(--pf-bg);
+  color: var(--pf-ink);
+  border: 1px solid var(--pf-border);
+  border-radius: 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.portfolio-public .pf-input::placeholder {
+  color: var(--pf-subtle);
+}
+
+.portfolio-public .pf-input:focus {
+  border-color: var(--pf-border-strong);
+}
+
+.portfolio-public :is(a, button, input, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--pf-focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-public :not(.cinematic-hero):not(.cinematic-hero *) {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

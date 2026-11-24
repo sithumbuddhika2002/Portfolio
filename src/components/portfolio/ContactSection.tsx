@@ -1,39 +1,47 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { usePortfolioData } from '../../hooks/usePortfolioData';
 import { EnvelopeIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/outline';
+
+const SOCIAL_LABELS: Record<string, string> = {
+    github: 'GitHub',
+    linkedin: 'LinkedIn',
+    twitter: 'Twitter / X',
+    instagram: 'Instagram',
+    dribbble: 'Dribbble',
+    behance: 'Behance',
+};
 
 export const ContactSection: React.FC = () => {
     const { data } = usePortfolioData();
     const { contact } = data;
+    const prefersReducedMotion = useReducedMotion();
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         subject: '',
         message: '',
     });
-    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success'>('idle');
+    const [draftOpened, setDraftOpened] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Create mailto link with form data
-        const emailTo = 'sithumbuddhika2002@gmail.com';
+        const emailTo = contact.email || 'sithumbuddhika2002@gmail.com';
         const subject = encodeURIComponent(formData.subject);
         const body = encodeURIComponent(
             `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
         );
         const mailtoLink = `mailto:${emailTo}?subject=${subject}&body=${body}`;
 
-        // Open email client
         window.location.href = mailtoLink;
 
-        // Show success message
-        setSubmitStatus('success');
+        setDraftOpened(true);
         setTimeout(() => {
-            setSubmitStatus('idle');
+            setDraftOpened(false);
             setFormData({ name: '', email: '', subject: '', message: '' });
-        }, 3000);
+        }, 3500);
     };
 
     const handleChange = (
@@ -47,182 +55,206 @@ export const ContactSection: React.FC = () => {
             icon: EnvelopeIcon,
             label: 'Email',
             value: contact.email,
-            href: `mailto:${contact.email}`,
+            href: contact.email ? `mailto:${contact.email}` : undefined,
         },
         {
             icon: PhoneIcon,
             label: 'Phone',
             value: contact.phone,
-            href: `tel:${contact.phone}`,
+            href: contact.phone ? `tel:${contact.phone}` : undefined,
         },
         {
             icon: MapPinIcon,
             label: 'Location',
             value: contact.location,
         },
-    ];
+    ].filter((item) => Boolean(item.value && item.value.trim()));
 
-    const socialLinks = Object.entries(contact.social).filter(([, url]) => url);
+    const socialLinks = Object.entries(contact.social || {}).filter(
+        ([, url]) => Boolean(url && url.trim())
+    );
+
+    const fadeProps = prefersReducedMotion
+        ? {}
+        : {
+              initial: { opacity: 0, y: 12 },
+              whileInView: { opacity: 1, y: 0 },
+              viewport: { once: true, margin: '-40px' },
+              transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
+          };
 
     return (
-        <section id="contact" className="section-padding bg-gray-50 dark:bg-gray-900/50">
-            <div className="max-w-7xl mx-auto">
-                <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center mb-16"
-                >
-                    <h2 className="text-4xl md:text-5xl font-bold font-display mb-4">
-                        Get In <span className="gradient-text">Touch</span>
+        <section id="contact" className="pf-section" aria-labelledby="contact-heading">
+            <div className="pf-container">
+                {/* Section Header */}
+                <motion.div {...fadeProps} className="mb-10 sm:mb-12 space-y-3">
+                    <p className="pf-eyebrow">
+                        <span className="pf-eyebrow-index">05</span>
+                        <span>/</span>
+                        <span>Contact</span>
+                    </p>
+                    <h2 id="contact-heading" className="pf-heading text-3xl sm:text-4xl lg:text-[2.75rem]">
+                        Get in Touch
                     </h2>
-                    <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                        Have a project in mind? Let's work together to create something amazing
+                    <p className="pf-lead text-sm sm:text-base max-w-xl">
+                        Open to software engineering opportunities, technical collaborations, and project inquiries.
                     </p>
                 </motion.div>
 
-                <div className="grid md:grid-cols-2 gap-12">
-                    {/* Contact Info */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                        className="space-y-8"
-                    >
-                        <div>
-                            <h3 className="text-2xl font-bold font-display mb-6">
-                                Contact Information
-                            </h3>
-                            <div className="space-y-6">
-                                {contactInfo.map((item, index) => (
-                                    <motion.div
-                                        key={index}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        whileInView={{ opacity: 1, x: 0 }}
-                                        viewport={{ once: true }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className="flex items-start gap-4"
-                                    >
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-r from-primary-500 to-accent-500 flex items-center justify-center">
-                                            <item.icon className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {item.label}
-                                            </p>
-                                            {item.href ? (
-                                                <a
-                                                    href={item.href}
-                                                    className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors break-all"
-                                                >
-                                                    {item.value}
-                                                </a>
-                                            ) : (
-                                                <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                                    {item.value}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
+                    {/* Left Column: Two Bento Cards (Contact Info + Social Profiles) */}
+                    <motion.div {...fadeProps} className="lg:col-span-5 flex flex-col gap-4 sm:gap-5">
+                        {contactInfo.length > 0 && (
+                            <div className="pf-bento p-5 sm:p-6 flex-1">
+                                <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-[var(--pf-subtle)] mb-4">
+                                    Direct Contact
+                                </h3>
+                                <div className="space-y-3">
+                                    {contactInfo.map((item) => (
+                                        <div
+                                            key={item.label}
+                                            className="pf-bento-subtle p-3.5 flex items-center gap-3.5"
+                                        >
+                                            <div className="w-10 h-10 rounded-xl bg-[var(--pf-surface)] border border-[var(--pf-border)] flex items-center justify-center shrink-0 text-[var(--pf-ink)]">
+                                                <item.icon className="w-4 h-4" aria-hidden="true" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-[var(--pf-subtle)]">
+                                                    {item.label}
                                                 </p>
-                                            )}
+                                                {item.href ? (
+                                                    <a
+                                                        href={item.href}
+                                                        className="text-sm font-medium text-[var(--pf-ink)] hover:text-[var(--pf-accent)] transition-colors break-all"
+                                                    >
+                                                        {item.value}
+                                                    </a>
+                                                ) : (
+                                                    <p className="text-sm font-medium text-[var(--pf-ink)]">
+                                                        {item.value}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
-                                    </motion.div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        {/* Social Links */}
                         {socialLinks.length > 0 && (
-                            <div>
-                                <h3 className="text-xl font-bold mb-4">Connect With Me</h3>
-                                <div className="flex gap-4">
+                            <div className="pf-bento p-5 sm:p-6">
+                                <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-[var(--pf-subtle)] mb-4">
+                                    Profiles
+                                </h3>
+                                <div className="flex flex-wrap gap-2.5">
                                     {socialLinks.map(([platform, url]) => (
-                                        <motion.a
+                                        <a
                                             key={platform}
                                             href={url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gradient-to-r hover:from-primary-500 hover:to-accent-500 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-white transition-all"
-                                            whileHover={{ scale: 1.1, rotate: 5 }}
-                                            whileTap={{ scale: 0.9 }}
+                                            className="px-3.5 py-2 rounded-xl border border-[var(--pf-border)] bg-[var(--pf-surface-2)] hover:border-[var(--pf-border-strong)] text-xs font-medium text-[var(--pf-ink)] transition-colors inline-flex items-center gap-1.5"
                                         >
-                                            <span className="capitalize text-sm font-semibold">
-                                                {platform.slice(0, 2)}
-                                            </span>
-                                        </motion.a>
+                                            <span>{SOCIAL_LABELS[platform] || platform}</span>
+                                            <span aria-hidden="true" className="text-[var(--pf-muted)]">↗</span>
+                                        </a>
                                     ))}
                                 </div>
                             </div>
                         )}
                     </motion.div>
 
-                    {/* Contact Form */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <form onSubmit={handleSubmit} className="card space-y-6">
-                            <div>
-                                <label className="block text-sm font-semibold mb-2">Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                    placeholder="Your name"
-                                />
+                    {/* Right Column: Email Draft Form Bento Card */}
+                    <motion.div {...fadeProps} className="lg:col-span-7">
+                        <form onSubmit={handleSubmit} className="pf-bento p-6 sm:p-8 space-y-5 h-full flex flex-col justify-between">
+                            <div className="space-y-5">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div>
+                                        <label
+                                            htmlFor="contact-name"
+                                            className="block text-xs font-mono uppercase tracking-[0.14em] text-[var(--pf-muted)] mb-2"
+                                        >
+                                            Name
+                                        </label>
+                                        <input
+                                            id="contact-name"
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            required
+                                            className="pf-input"
+                                            placeholder="Your name"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            htmlFor="contact-email"
+                                            className="block text-xs font-mono uppercase tracking-[0.14em] text-[var(--pf-muted)] mb-2"
+                                        >
+                                            Email
+                                        </label>
+                                        <input
+                                            id="contact-email"
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            required
+                                            className="pf-input"
+                                            placeholder="you@example.com"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label
+                                        htmlFor="contact-subject"
+                                        className="block text-xs font-mono uppercase tracking-[0.14em] text-[var(--pf-muted)] mb-2"
+                                    >
+                                        Subject
+                                    </label>
+                                    <input
+                                        id="contact-subject"
+                                        type="text"
+                                        name="subject"
+                                        value={formData.subject}
+                                        onChange={handleChange}
+                                        required
+                                        className="pf-input"
+                                        placeholder="Project inquiry or collaboration"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label
+                                        htmlFor="contact-message"
+                                        className="block text-xs font-mono uppercase tracking-[0.14em] text-[var(--pf-muted)] mb-2"
+                                    >
+                                        Message
+                                    </label>
+                                    <textarea
+                                        id="contact-message"
+                                        name="message"
+                                        value={formData.message}
+                                        onChange={handleChange}
+                                        required
+                                        rows={5}
+                                        className="pf-input resize-none"
+                                        placeholder="Write your message..."
+                                    />
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold mb-2">Email</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                    placeholder="your.email@example.com"
-                                />
+                            <div className="pt-2 space-y-2.5">
+                                <button type="submit" className="pf-btn-primary w-full justify-center">
+                                    {draftOpened ? 'Email Draft Opened ↗' : 'Open in Email Client ↗'}
+                                </button>
+                                <p className="text-xs text-[var(--pf-subtle)] text-center">
+                                    Opens a pre-filled draft in your default email application.
+                                </p>
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold mb-2">Subject</label>
-                                <input
-                                    type="text"
-                                    name="subject"
-                                    value={formData.subject}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                    placeholder="What's this about?"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold mb-2">Message</label>
-                                <textarea
-                                    name="message"
-                                    value={formData.message}
-                                    onChange={handleChange}
-                                    required
-                                    rows={5}
-                                    className="input-field resize-none"
-                                    placeholder="Your message..."
-                                />
-                            </div>
-
-                            <motion.button
-                                type="submit"
-                                className="btn-primary w-full"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                            >
-                                {submitStatus === 'success' ? '✓ Message Sent!' : 'Send Message'}
-                            </motion.button>
                         </form>
                     </motion.div>
                 </div>

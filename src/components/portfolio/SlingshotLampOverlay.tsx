@@ -315,17 +315,15 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
             sim.lamp.ay = 0;
             sim.lamp.len = isMobile ? 22 : clamp(Math.min(w * 0.035, 32), 24, 30);
 
-            // Catapult / Slingshot: Positioned lower down alongside the skills grid
+            // Catapult / Slingshot: Positioned in left gutter alongside the skills bento grid
             if (!isMobile) {
-                // Desktop: in the left gutter, lower down (y ≈ 530, rest at y ≈ 455)
-                sim.sling.x = clamp(w * 0.10, 65, 140);
-                sim.sling.y = 530;
-                sim.sling.rest = { x: sim.sling.x, y: 455 };
+                sim.sling.x = clamp(w * 0.04, 34, 64);
+                sim.sling.y = Math.min(Math.max(h - 60, 260), 530);
+                sim.sling.rest = { x: sim.sling.x, y: sim.sling.y - 75 };
             } else {
-                // Mobile: positioned lower down below the header
                 sim.sling.x = clamp(w * 0.22, 70, 95);
-                sim.sling.y = 420;
-                sim.sling.rest = { x: sim.sling.x, y: 350 };
+                sim.sling.y = Math.min(Math.max(h - 60, 240), 420);
+                sim.sling.rest = { x: sim.sling.x, y: sim.sling.y - 70 };
             }
 
             if (!sim.grab || sim.grab.type !== 'pouch') {
@@ -695,11 +693,18 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
             ctx.save();
             ctx.globalCompositeOperation = 'source-over';
 
-            // Light cone
+            // Light cone (subtle, restrained illumination)
+            const isDarkTheme = document.documentElement.classList.contains('dark');
             const coneGrad = ctx.createRadialGradient(b.x, b.y, 10, b.x, b.y, far);
-            coneGrad.addColorStop(0, `rgba(255, 214, 160, ${I * 0.16})`);
-            coneGrad.addColorStop(0.4, `rgba(255, 200, 135, ${I * 0.07})`);
-            coneGrad.addColorStop(1, 'rgba(255, 190, 120, 0)');
+            if (isDarkTheme) {
+                coneGrad.addColorStop(0, `rgba(255, 224, 180, ${I * 0.1})`);
+                coneGrad.addColorStop(0.45, `rgba(255, 210, 155, ${I * 0.04})`);
+                coneGrad.addColorStop(1, 'rgba(255, 200, 140, 0)');
+            } else {
+                coneGrad.addColorStop(0, `rgba(205, 145, 70, ${I * 0.09})`);
+                coneGrad.addColorStop(0.45, `rgba(205, 145, 70, ${I * 0.035})`);
+                coneGrad.addColorStop(1, 'rgba(205, 145, 70, 0)');
+            }
             ctx.fillStyle = coneGrad;
             ctx.beginPath();
             ctx.moveTo(rl.x, rl.y);
@@ -707,15 +712,6 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
             ctx.lineTo(rr.x + dr.x * far, rr.y + dr.y * far);
             ctx.lineTo(rl.x + dl.x * far, rl.y + dl.y * far);
             ctx.closePath();
-            ctx.fill();
-
-            // Warm halo around bulb
-            const halo = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 130);
-            halo.addColorStop(0, `rgba(255, 210, 150, ${I * 0.28})`);
-            halo.addColorStop(1, 'rgba(255, 210, 150, 0)');
-            ctx.fillStyle = halo;
-            ctx.beginPath();
-            ctx.arc(b.x, b.y, 130, 0, TAU);
             ctx.fill();
 
             ctx.restore();
@@ -767,10 +763,6 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
             ctx.save();
             ctx.strokeStyle = rgba(mix([96, 78, 56], [255, 244, 214], f), 1);
             ctx.lineWidth = 1.2;
-            if (f > 0.03) {
-                ctx.shadowColor = `rgba(255,170,80,${f})`;
-                ctx.shadowBlur = 12 * f;
-            }
             ctx.beginPath();
             ctx.moveTo(-4, 58);
             for (let k = 1; k <= 8; k++) {
@@ -849,17 +841,6 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
             ctx.ellipse(0, 48, 48, 6, 0, 0, Math.PI);
             ctx.stroke();
             ctx.restore();
-
-            if (I > 0.01) {
-                const b = toWorld(BULB[0], BULB[1]);
-                const h = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 65);
-                h.addColorStop(0, `rgba(255,200,130,${0.45 * I})`);
-                h.addColorStop(1, 'rgba(255,200,130,0)');
-                ctx.globalCompositeOperation = 'lighter';
-                ctx.fillStyle = h;
-                ctx.fillRect(b.x - 65, b.y - 65, 130, 130);
-                ctx.globalCompositeOperation = 'source-over';
-            }
         };
 
         const drawPebble = (x: number, y: number, a: number, alpha = 1) => {
@@ -937,6 +918,7 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
                 const vx = (sim.sling.rest.x - p.x) * LAUNCH;
                 const vy = (sim.sling.rest.y - p.y) * LAUNCH;
                 const numDots = isMobile ? 20 : 26;
+                const isDarkTheme = document.documentElement.classList.contains('dark');
 
                 for (let i = 1; i <= numDots; i++) {
                     const t = i * 0.026;
@@ -944,17 +926,15 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
                     const py = p.y + vy * t + 0.5 * PEBBLE_G * t * t;
                     if (px < 0 || px > sim.W || py > sim.H) break;
 
-                    const r = Math.max(1.8, (isMobile ? 3.8 : 4.4) * (1 - i / (numDots + 4)));
-                    const alpha = 0.92 * (1 - i / (numDots + 2));
+                    const r = Math.max(1.8, (isMobile ? 3.5 : 4) * (1 - i / (numDots + 4)));
+                    const alpha = 0.85 * (1 - i / (numDots + 2));
 
-                    ctx.save();
-                    ctx.shadowColor = '#f3c98f';
-                    ctx.shadowBlur = 8;
-                    ctx.fillStyle = `rgba(243, 201, 143, ${alpha})`;
+                    ctx.fillStyle = isDarkTheme
+                        ? `rgba(229, 229, 225, ${alpha})`
+                        : `rgba(18, 20, 24, ${alpha * 0.72})`;
                     ctx.beginPath();
                     ctx.arc(px, py, r, 0, TAU);
                     ctx.fill();
-                    ctx.restore();
                 }
             }
 
@@ -1117,18 +1097,18 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
         });
         resizeObserver.observe(container);
 
-        // IntersectionObserver: Only allow RAF loop when About section is actually scrolled in view
+        // IntersectionObserver: Only allow RAF loop when lab container is scrolled in view
         const intersectionObserver = new IntersectionObserver(
             ([entry]) => {
                 isVisible = entry.isIntersecting;
-                if (!isVisible) {
-                    if (isRunning) {
-                        cancelAnimationFrame(animId);
-                        isRunning = false;
-                    }
+                if (isVisible) {
+                    render();
+                } else if (isRunning) {
+                    cancelAnimationFrame(animId);
+                    isRunning = false;
                 }
             },
-            { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
+            { threshold: 0.05 }
         );
         intersectionObserver.observe(container);
 
@@ -1150,7 +1130,7 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
             intersectionObserver.disconnect();
             themeObserver.disconnect();
         };
-    }, [handleToggleSwitch, playSound]);
+    }, [containerRef, handleToggleSwitch, playSound]);
 
     /* =========================================================================
        TOUCH & POINTER INTERACTIONS (Non-blocking for smooth mobile scrolling)
@@ -1281,41 +1261,42 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
                 onPointerCancel={handlePointerUp}
                 title="Pull and aim the pebble"
             >
-                {/* Subtle idle pulsing hint to make slingshot discovery effortless */}
+                {/* Subtle idle hint */}
                 {!hasInteracted && (
-                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 pointer-events-none whitespace-nowrap px-2 py-0.5 rounded-full bg-amber-500/25 text-amber-300 text-[10px] font-mono border border-amber-500/35 shadow-sm animate-pulse">
-                        Pull to shoot 🎯
+                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 pointer-events-none whitespace-nowrap px-2.5 py-0.5 rounded-lg bg-[var(--pf-surface)] text-[var(--pf-ink)] text-[10px] font-mono border border-[var(--pf-border-strong)]">
+                        Pull to aim
                     </div>
                 )}
             </div>
 
             {/* Top Right Controls: Sound Toggle & Stats */}
             <div className="absolute top-3 sm:top-4 right-3 sm:right-6 flex items-center gap-2 pointer-events-auto z-30">
-                {/* Shots / Bulbs Counter pill */}
-                <div className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-full glass-subtle text-[11px] font-mono text-gray-500 dark:text-gray-400 border border-black/[0.05] dark:border-white/[0.08]">
-                    <span>shots: <b className="text-gray-800 dark:text-gray-200">{stats.shots}</b></span>
+                {/* Shots / Bulbs Counter */}
+                <div className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[var(--pf-surface)] text-[11px] font-mono text-[var(--pf-muted)] border border-[var(--pf-border)]">
+                    <span>shots: <b className="text-[var(--pf-ink)]">{stats.shots}</b></span>
                     <span>·</span>
-                    <span>broken: <b className="text-gray-800 dark:text-gray-200">{stats.bulbs}</b></span>
+                    <span>broken: <b className="text-[var(--pf-ink)]">{stats.bulbs}</b></span>
                 </div>
 
                 {/* Sound Toggle Button */}
                 <button
+                    type="button"
                     onClick={() => {
                         getAudio();
                         setMuted(!muted);
                     }}
-                    className="p-1.5 sm:px-3 sm:py-1.5 rounded-full glass-card hover:bg-white dark:hover:bg-gray-800 border border-black/[0.05] dark:border-white/[0.1] text-xs font-mono text-gray-600 dark:text-gray-300 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                    className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-[var(--pf-surface)] hover:bg-[var(--pf-surface-2)] border border-[var(--pf-border)] hover:border-[var(--pf-border-strong)] text-xs font-mono text-[var(--pf-ink)] transition-colors flex items-center gap-1.5 cursor-pointer"
                     title={muted ? 'Unmute sound' : 'Mute sound'}
                     aria-label="Toggle sound"
                 >
                     {muted ? (
                         <>
-                            <SpeakerXMarkIcon className="w-4 h-4 text-red-400" />
+                            <SpeakerXMarkIcon className="w-4 h-4 text-[var(--pf-muted)]" />
                             <span className="hidden sm:inline">sound: off</span>
                         </>
                     ) : (
                         <>
-                            <SpeakerWaveIcon className="w-4 h-4 text-primary-500" />
+                            <SpeakerWaveIcon className="w-4 h-4 text-[var(--pf-ink)]" />
                             <span className="hidden sm:inline">sound: on</span>
                         </>
                     )}
@@ -1335,7 +1316,7 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
                 role="switch"
                 aria-checked={lightOn}
                 tabIndex={0}
-                className="absolute right-2 sm:right-6 md:right-8 top-12 sm:top-20 pointer-events-auto switch-box z-30 scale-75 sm:scale-100 origin-top-right"
+                className="absolute right-2 sm:right-6 md:right-8 top-14 sm:top-20 pointer-events-auto switch-box z-30 scale-75 sm:scale-100 origin-top-right"
                 title="Click or shoot with pebble to toggle light"
                 aria-label="Toggle lamp switch"
             >
@@ -1351,13 +1332,14 @@ export const SlingshotLampOverlay: React.FC<SlingshotLampOverlayProps> = ({ cont
 
             {/* Floating "Replace Bulb" Reset Button when shattered */}
             {bulbBroken && (
-                <div className="absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 pointer-events-auto z-40 animate-bounce">
+                <div className="absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 pointer-events-auto z-40">
                     <button
+                        type="button"
                         onClick={handleReplaceBulb}
-                        className="px-4 py-2 rounded-full bg-amber-400 text-gray-900 font-bold text-xs shadow-xl hover:bg-amber-300 transition-all flex items-center gap-2 border border-amber-200"
+                        className="px-4 py-2 rounded-xl bg-[var(--pf-btn-primary-bg)] text-[var(--pf-btn-primary-ink)] font-medium text-xs hover:bg-[var(--pf-btn-primary-hover)] transition-colors flex items-center gap-2 border border-[var(--pf-border-strong)] cursor-pointer"
                         title="Restore broken bulb"
                     >
-                        <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                        <ArrowPathIcon className="w-4 h-4" />
                         Replace Bulb (R)
                     </button>
                 </div>
