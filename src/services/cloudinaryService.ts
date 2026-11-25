@@ -6,6 +6,8 @@ export interface CloudinaryUploadResponse {
     width: number;
     height: number;
     format: string;
+    resource_type?: string;
+    duration?: number;
 }
 
 export const generateSha1Signature = async (
@@ -52,10 +54,14 @@ export const isCloudinaryConfigured = (settings?: Settings): boolean => {
     return Boolean(cloudName && ((apiKey && apiSecret) || uploadPreset));
 };
 
-export const uploadToCloudinary = async (
+export const uploadMediaToCloudinary = async (
     file: File,
-    settings?: Settings
-): Promise<string> => {
+    settings?: Settings,
+    options?: {
+        resourceType?: 'image' | 'video' | 'auto';
+        onProgress?: (percent: number) => void;
+    }
+): Promise<CloudinaryUploadResponse> => {
     const { cloudName, apiKey, apiSecret, uploadPreset } = getCloudinaryCredentials(settings);
 
     if (!cloudName) {
@@ -77,20 +83,57 @@ export const uploadToCloudinary = async (
         throw new Error('Please configure API Key/Secret or Upload Preset for Cloudinary uploads.');
     }
 
-    const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    const resourceType = options?.resourceType || 'auto';
+    const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
 
-    const response = await fetch(url, {
-        method: 'POST',
-        body: formData,
+    return new Promise<CloudinaryUploadResponse>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', url);
+
+        if (options?.onProgress) {
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable && event.total > 0) {
+                    const percent = Math.min(100, Math.round((event.loaded / event.total) * 100));
+                    options.onProgress?.(percent);
+                }
+            };
+        }
+
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const data: CloudinaryUploadResponse = JSON.parse(xhr.responseText);
+                    resolve(data);
+                } catch {
+                    reject(new Error('Cloudinary Upload Error: Invalid response format.'));
+                }
+            } else {
+                let errorMessage = `Upload failed with status ${xhr.status}`;
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    if (errorData?.error?.message) {
+                        errorMessage = errorData.error.message;
+                    }
+                } catch {
+                    // ignore JSON parse error on error response
+                }
+                reject(new Error(`Cloudinary Upload Error: ${errorMessage}`));
+            }
+        };
+
+        xhr.onerror = () => {
+            reject(new Error('Cloudinary Upload Error: Network error occurred during upload.'));
+        };
+
+        xhr.send(formData);
     });
+};
 
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData?.error?.message || `Upload failed with status ${response.status}`;
-        throw new Error(`Cloudinary Upload Error: ${errorMessage}`);
-    }
-
-    const data: CloudinaryUploadResponse = await response.json();
+export const uploadToCloudinary = async (
+    file: File,
+    settings?: Settings
+): Promise<string> => {
+    const data = await uploadMediaToCloudinary(file, settings, { resourceType: 'image' });
     return data.secure_url;
 };
 

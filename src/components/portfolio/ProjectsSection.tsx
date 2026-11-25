@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import type { Project } from '../../types/portfolio';
 import { normalizeCategory, isProjectInFilter } from '../../utils/projectUtils';
+import { ProjectMedia } from '../common/ProjectMedia';
 
 const isPlaceholderCopy = (text?: string): boolean => {
     if (!text) return true;
@@ -31,32 +32,6 @@ const getProjectLongCopy = (project: Project): string => {
     if (!isPlaceholderCopy(project.longDescription)) return project.longDescription.trim();
     if (!isPlaceholderCopy(project.description)) return project.description.trim();
     return '';
-};
-
-const ProjectThumb: React.FC<{ src?: string; alt: string; className?: string }> = ({
-    src,
-    alt,
-    className = '',
-}) => {
-    const [failed, setFailed] = useState(false);
-
-    if (!src || failed) {
-        return (
-            <div className="w-full h-full flex items-center justify-center bg-[var(--pf-surface-2)] text-xs font-mono text-[var(--pf-subtle)]">
-                No preview image
-            </div>
-        );
-    }
-
-    return (
-        <img
-            src={src}
-            alt={alt}
-            loading="lazy"
-            className={className}
-            onError={() => setFailed(true)}
-        />
-    );
 };
 
 export const ProjectsSection: React.FC = () => {
@@ -236,9 +211,9 @@ export const ProjectsSection: React.FC = () => {
                                                 : 'aspect-[16/10] w-full border-b border-[var(--pf-border)]'
                                         }`}
                                     >
-                                        <ProjectThumb
-                                            src={project.image}
-                                            alt={project.title}
+                                        <ProjectMedia
+                                            project={project}
+                                            variant="card"
                                             className="w-full h-full object-cover"
                                         />
                                     </div>
@@ -423,9 +398,9 @@ export const ProjectsSection: React.FC = () => {
 
                                 <div className="p-5 sm:p-7 space-y-6">
                                     <div className="aspect-[16/9] w-full rounded-xl bg-[var(--pf-surface-2)] border border-[var(--pf-border)] overflow-hidden">
-                                        <ProjectThumb
-                                            src={selectedProject.image}
-                                            alt={selectedProject.title}
+                                        <ProjectMedia
+                                            project={selectedProject}
+                                            variant="modal"
                                             className="w-full h-full object-cover"
                                         />
                                     </div>

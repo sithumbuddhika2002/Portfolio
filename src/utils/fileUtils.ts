@@ -1,5 +1,10 @@
 import type { PortfolioData, Settings } from '../types/portfolio';
-import { isCloudinaryConfigured, uploadToCloudinary } from '../services/cloudinaryService';
+import {
+    isCloudinaryConfigured,
+    uploadMediaToCloudinary,
+    uploadToCloudinary,
+} from '../services/cloudinaryService';
+import { getCloudinaryVideoPosterUrl, isVideoFile } from './mediaUtils';
 
 export const convertFileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -162,4 +167,61 @@ export const uploadImageSmart = async (
     const quality = options?.quality ?? 0.88;
     const localBase64 = await compressImage(file, maxWidth, quality);
     return { url: localBase64, source: 'local' };
+};
+
+const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
+
+/**
+ * Smart project media upload function:
+ * - Videos: validates size (<= 100MB), requires Cloudinary (never falls back to base64),
+ *   uploads via Cloudinary video endpoint with progress, and returns video URL + auto poster URL.
+ * - Images: delegates to uploadImageSmart.
+ */
+export const uploadProjectMediaSmart = async (
+    file: File,
+    settings?: Settings,
+    options?: {
+        maxWidth?: number;
+        quality?: number;
+        onProgress?: (percent: number) => void;
+    }
+): Promise<{
+    url: string;
+    posterUrl?: string;
+    mediaType: 'image' | 'video';
+    source: 'cloudinary' | 'local';
+}> => {
+    if (isVideoFile(file)) {
+        if (file.size > MAX_VIDEO_SIZE_BYTES) {
+            throw new Error(
+                'Video file is too large (max 100MB). Please trim or compress your screen recording.'
+            );
+        }
+
+        if (!isCloudinaryConfigured(settings)) {
+            throw new Error(
+                'Cloudinary must be configured in Settings to upload project videos.'
+            );
+        }
+
+        const response = await uploadMediaToCloudinary(file, settings, {
+            resourceType: 'video',
+            onProgress: options?.onProgress,
+        });
+
+        const posterUrl = getCloudinaryVideoPosterUrl(response.secure_url, 720);
+        return {
+            url: response.secure_url,
+            posterUrl,
+            mediaType: 'video',
+            source: 'cloudinary',
+        };
+    }
+
+    const { url, source } = await uploadImageSmart(file, settings, options);
+    return {
+        url,
+        mediaType: 'image',
+        source,
+    };
 };

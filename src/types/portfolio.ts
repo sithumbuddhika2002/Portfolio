@@ -51,6 +51,8 @@ export interface Project {
     description: string;
     longDescription: string;
     image: string;
+    mediaType?: 'image' | 'video';
+    videoUrl?: string;
     technologies: string[];
     liveUrl?: string;
     githubUrl?: string;

@@ -12,7 +12,9 @@ import {
     BriefcaseIcon,
 } from '@heroicons/react/24/outline';
 import { useToast } from '../../contexts/ToastContext';
-import { uploadImageSmart } from '../../utils/fileUtils';
+import { uploadProjectMediaSmart } from '../../utils/fileUtils';
+import { ProjectMedia } from '../../components/common/ProjectMedia';
+import { getCloudinaryVideoPosterUrl, isVideoUrl } from '../../utils/mediaUtils';
 import {
     normalizeCategory,
     isProjectInFilter,
@@ -26,6 +28,7 @@ export const ProjectsEditor: React.FC = () => {
     const [projects, setProjects] = useState<Project[]>(data.projects || []);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState<number | null>(null);
     const [isSavingAll, setIsSavingAll] = useState(false);
     const [isSavingProject, setIsSavingProject] = useState(false);
 
@@ -112,15 +115,19 @@ export const ProjectsEditor: React.FC = () => {
     const handleUpdate = async (updatedProject: Project) => {
         setIsSavingProject(true);
         try {
+            const sanitizedProject = Object.fromEntries(
+                Object.entries(updatedProject).filter(([, value]) => value !== undefined)
+            ) as Project;
+
             let newProjects;
-            const exists = projects.some((p) => p.id === updatedProject.id);
+            const exists = projects.some((p) => p.id === sanitizedProject.id);
 
             if (exists) {
                 newProjects = projects.map((p) =>
-                    p.id === updatedProject.id ? updatedProject : p
+                    p.id === sanitizedProject.id ? sanitizedProject : p
                 );
             } else {
-                newProjects = [...projects, updatedProject];
+                newProjects = [...projects, sanitizedProject];
             }
 
             setProjects(newProjects);
@@ -135,20 +142,48 @@ export const ProjectsEditor: React.FC = () => {
         }
     };
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file && editingProject) {
             try {
                 setIsUploading(true);
-                const { url, source } = await uploadImageSmart(file, data.settings, { maxWidth: 1600, quality: 0.88 });
-                setEditingProject({ ...editingProject, image: url });
-                const badge = source === 'cloudinary' ? 'Cloudinary ☁️' : 'HD Crisp 🖼️';
-                showSuccess(`Project image uploaded via ${badge}! 🎉`);
+                setUploadProgress(0);
+                const result = await uploadProjectMediaSmart(file, data.settings, {
+                    maxWidth: 1600,
+                    quality: 0.88,
+                    onProgress: (percent) => setUploadProgress(percent),
+                });
+
+                if (result.mediaType === 'video') {
+                    setEditingProject({
+                        ...editingProject,
+                        mediaType: 'video',
+                        videoUrl: result.url,
+                        image: result.posterUrl || editingProject.image,
+                    });
+                    showSuccess('Project video uploaded via Cloudinary! 🎬');
+                } else {
+                    const nextProject: Project = {
+                        ...editingProject,
+                        mediaType: 'image',
+                        image: result.url,
+                    };
+                    delete nextProject.videoUrl;
+                    setEditingProject(nextProject);
+                    const badge = result.source === 'cloudinary' ? 'Cloudinary ☁️' : 'HD Crisp 🖼️';
+                    showSuccess(`Project image uploaded via ${badge}! 🎉`);
+                }
             } catch (error) {
-                console.error('Failed to upload image:', error);
-                showError('Failed to upload image. Please try again.');
+                console.error('Failed to upload media:', error);
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to upload media. Please try again.';
+                showError(message);
             } finally {
                 setIsUploading(false);
+                setUploadProgress(null);
+                e.target.value = '';
             }
         }
     };
@@ -383,9 +418,9 @@ export const ProjectsEditor: React.FC = () => {
                                 <div>
                                     <div className="flex flex-col sm:flex-row items-start gap-4 mb-3">
                                         <div className="relative w-full sm:w-28 sm:h-28 h-40 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-800">
-                                            <img
-                                                src={project.image}
-                                                alt={project.title}
+                                            <ProjectMedia
+                                                project={project}
+                                                variant="admin-thumb"
                                                 className="w-full h-full object-cover"
                                             />
                                             {project.featured && (
@@ -643,25 +678,59 @@ export const ProjectsEditor: React.FC = () => {
 
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-semibold mb-2">
-                                            Project Image
-                                        </label>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="block text-sm font-semibold">
+                                                Project Media (Image or Video)
+                                            </label>
+                                            <span
+                                                className={`text-[11px] px-2 py-0.5 rounded-full font-medium border ${
+                                                    editingProject.mediaType === 'video' || isVideoUrl(editingProject.videoUrl)
+                                                        ? 'bg-accent-500/10 text-accent-600 dark:text-accent-400 border-accent-500/25'
+                                                        : 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border-primary-500/25'
+                                                }`}
+                                            >
+                                                {editingProject.mediaType === 'video' || isVideoUrl(editingProject.videoUrl)
+                                                    ? 'Video'
+                                                    : 'Image'}
+                                            </span>
+                                        </div>
                                         <div className="space-y-3">
                                             <div className="flex gap-2">
                                                 <input
                                                     type="url"
-                                                    value={editingProject.image}
-                                                    onChange={(e) =>
-                                                        setEditingProject({ ...editingProject, image: e.target.value })
+                                                    value={
+                                                        editingProject.mediaType === 'video'
+                                                            ? editingProject.videoUrl || ''
+                                                            : editingProject.image
                                                     }
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        if (isVideoUrl(val)) {
+                                                            const autoPoster = getCloudinaryVideoPosterUrl(val);
+                                                            setEditingProject({
+                                                                ...editingProject,
+                                                                mediaType: 'video',
+                                                                videoUrl: val,
+                                                                image: autoPoster || editingProject.image,
+                                                            });
+                                                        } else {
+                                                            const nextProject: Project = {
+                                                                ...editingProject,
+                                                                mediaType: 'image',
+                                                                image: val,
+                                                            };
+                                                            delete nextProject.videoUrl;
+                                                            setEditingProject(nextProject);
+                                                        }
+                                                    }}
                                                     className="input-field flex-1"
-                                                    placeholder="Enter URL or upload image"
+                                                    placeholder="Enter image/video URL or upload media"
                                                 />
                                                 <div className="relative">
                                                     <input
                                                         type="file"
-                                                        accept="image/png, image/jpeg, image/jpg, image/svg+xml, image/gif, image/webp"
-                                                        onChange={handleImageUpload}
+                                                        accept="image/png, image/jpeg, image/jpg, image/svg+xml, image/gif, image/webp, video/mp4, video/webm, video/quicktime"
+                                                        onChange={handleMediaUpload}
                                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                                         disabled={isUploading}
                                                     />
@@ -671,15 +740,22 @@ export const ProjectsEditor: React.FC = () => {
                                                             isUploading ? 'opacity-50 cursor-not-allowed' : ''
                                                         }`}
                                                     >
-                                                        {isUploading ? 'Uploading...' : 'Upload Image'}
+                                                        {isUploading
+                                                            ? uploadProgress !== null
+                                                                ? `Uploading ${uploadProgress}%`
+                                                                : 'Uploading...'
+                                                            : 'Upload Media'}
                                                     </button>
                                                 </div>
                                             </div>
-                                            {editingProject.image && (
+                                            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                                Supports PNG, JPG, WebP, GIF or MP4/WebM screen recordings (5–15s recommended for fast autoplay).
+                                            </p>
+                                            {(editingProject.image || editingProject.videoUrl) && (
                                                 <div className="relative w-full h-40 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                                                    <img
-                                                        src={editingProject.image}
-                                                        alt="Preview"
+                                                    <ProjectMedia
+                                                        project={editingProject}
+                                                        variant="admin-preview"
                                                         className="w-full h-full object-contain"
                                                     />
                                                 </div>
