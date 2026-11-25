@@ -115,7 +115,7 @@ export const ProjectMedia: React.FC<ProjectMediaProps> = ({
 
     if (isAdminThumb) {
         return (
-            <div className="relative w-full h-full">
+            <div className="relative w-full h-full flex items-center justify-center">
                 {poster ? (
                     <img
                         src={poster}
@@ -142,7 +142,7 @@ export const ProjectMedia: React.FC<ProjectMediaProps> = ({
     }
 
     return (
-        <div ref={containerRef} className="w-full h-full">
+        <div ref={containerRef} className="w-full h-full flex items-center justify-center">
             <video
                 ref={videoRef}
                 src={shouldLoad ? optimizedUrl : undefined}

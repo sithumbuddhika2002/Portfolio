@@ -199,22 +199,22 @@ export const ProjectsSection: React.FC = () => {
                                     }}
                                     className={`pf-bento overflow-hidden hover:border-[var(--pf-border-strong)] transition-colors duration-150 flex flex-col justify-between cursor-pointer group text-left ${
                                         isLeadBento
-                                            ? 'lg:col-span-2 lg:grid lg:grid-cols-12 lg:items-stretch'
+                                            ? 'sm:col-span-2 lg:col-span-3 lg:grid lg:grid-cols-12 lg:items-stretch'
                                             : ''
                                     }`}
                                 >
                                     {/* Thumbnail */}
                                     <div
-                                        className={`bg-[var(--pf-surface-2)] overflow-hidden ${
+                                        className={`w-full aspect-video bg-[var(--pf-bg-alt)] overflow-hidden flex items-center justify-center ${
                                             isLeadBento
-                                                ? 'aspect-[16/10] lg:aspect-auto lg:col-span-7 border-b lg:border-b-0 lg:border-r border-[var(--pf-border)]'
-                                                : 'aspect-[16/10] w-full border-b border-[var(--pf-border)]'
+                                                ? 'lg:col-span-7 border-b lg:border-b-0 lg:border-r border-[var(--pf-border)]'
+                                                : 'border-b border-[var(--pf-border)]'
                                         }`}
                                     >
                                         <ProjectMedia
                                             project={project}
                                             variant="card"
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-contain object-center"
                                         />
                                     </div>
 
@@ -224,7 +224,7 @@ export const ProjectsSection: React.FC = () => {
                                             isLeadBento ? 'lg:col-span-5' : ''
                                         }`}
                                     >
-                                        <div className="p-5 sm:p-6">
+                                        <div className={isLeadBento ? 'p-5 xl:p-7' : 'p-5 sm:p-6'}>
                                             {/* Metadata */}
                                             <div className="flex items-center justify-between gap-2 mb-2.5 text-[11px] font-mono uppercase tracking-[0.14em] text-[var(--pf-subtle)]">
                                                 <span className="truncate">{categoryLabel}</span>
@@ -241,7 +241,7 @@ export const ProjectsSection: React.FC = () => {
                                             {/* Title & Description */}
                                             <h3
                                                 className={`font-display font-semibold text-[var(--pf-ink)] group-hover:text-[var(--pf-accent)] transition-colors leading-snug mb-2 ${
-                                                    isLeadBento ? 'text-xl sm:text-2xl' : 'text-lg'
+                                                    isLeadBento ? 'text-xl xl:text-2xl' : 'text-lg'
                                                 }`}
                                             >
                                                 {project.title}
@@ -250,7 +250,7 @@ export const ProjectsSection: React.FC = () => {
                                             {summary && (
                                                 <p
                                                     className={`text-sm text-[var(--pf-muted)] leading-relaxed mb-4 ${
-                                                        isLeadBento ? 'line-clamp-3' : 'line-clamp-2'
+                                                        isLeadBento ? 'line-clamp-2 xl:line-clamp-3' : 'line-clamp-2'
                                                     }`}
                                                 >
                                                     {summary}
@@ -278,7 +278,11 @@ export const ProjectsSection: React.FC = () => {
                                         </div>
 
                                         {/* Card Footer Links */}
-                                        <div className="px-5 sm:px-6 py-3.5 border-t border-[var(--pf-border)] flex items-center justify-between gap-3 text-xs font-medium">
+                                        <div
+                                            className={`${
+                                                isLeadBento ? 'px-5 xl:px-7' : 'px-5 sm:px-6'
+                                            } py-3.5 border-t border-[var(--pf-border)] flex items-center justify-between gap-3 text-xs font-medium`}
+                                        >
                                             <div className="flex items-center gap-4">
                                                 {project.liveUrl && (
                                                     <a
@@ -397,11 +401,11 @@ export const ProjectsSection: React.FC = () => {
                                 </div>
 
                                 <div className="p-5 sm:p-7 space-y-6">
-                                    <div className="aspect-[16/9] w-full rounded-xl bg-[var(--pf-surface-2)] border border-[var(--pf-border)] overflow-hidden">
+                                    <div className="aspect-[16/9] w-full rounded-xl bg-[var(--pf-bg-alt)] border border-[var(--pf-border)] overflow-hidden flex items-center justify-center">
                                         <ProjectMedia
                                             project={selectedProject}
                                             variant="modal"
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-contain object-center"
                                         />
                                     </div>
 

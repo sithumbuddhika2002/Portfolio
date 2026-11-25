@@ -421,7 +421,7 @@ export const ProjectsEditor: React.FC = () => {
                                             <ProjectMedia
                                                 project={project}
                                                 variant="admin-thumb"
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-contain object-center"
                                             />
                                             {project.featured && (
                                                 <span className="absolute top-1.5 left-1.5 text-[10px] px-1.5 py-0.5 rounded-md bg-accent-500 text-white font-semibold shadow-xs">
